@@ -44,13 +44,10 @@ Shows Diplomacy bonuses from:
 
 ## Installation
 
-### Method 1: Steam Workshop (Recommended)
-1. Subscribe to the mod through the Official Civilization VII Mod Browser
-2. Enable the mod in the Additional Content menu
-3. Start or load a game
-4. Hover over any town focus option to see the enhanced tooltips
+### Method 1: Steam Workshop (Coming Soon!)
+The mod will be available on the Official Civilization VII Mod Browser once mod support is released.
 
-### Method 2: Manual Installation
+### Method 2: Manual Installation (Currently Recommended)
 1. Download the mod files
 2. Navigate to your Civilization VII mods folder:
    - Press `Windows Key + R`
