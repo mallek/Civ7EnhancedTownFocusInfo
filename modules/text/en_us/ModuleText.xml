@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Database>
+	<EnglishText>
+		<Row Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO">
+			<Text>Enhanced Town Focus Info</Text>
+		</Row>
+		<Row Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION">
+			<Text>An enhanced display of town focus yield bonuses in Civ7, showing detailed breakdowns of improvements, buildings, and trade routes that contribute to specialization bonuses.</Text>
+		</Row>
+	</EnglishText>
+</Database>
