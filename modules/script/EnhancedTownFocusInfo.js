@@ -1,9 +1,18 @@
 (function() {
-    const VERSION = "1.0.5";
+    const VERSION = "1.1.0";
     let tooltipObserver = null;
     let contentObserver = null;
     let lastTooltip = null;  // Track the last tooltip we modified
     
+    const BASE_FONT_SIZE = 18;
+    const HIGH_RES_SCALING = 1.75;
+
+    // Function to calculate scaled font size
+    function getScaledFontSize(baseSize) {
+        const isHighRes = window.devicePixelRatio > 1 || window.innerWidth > 2560;
+        return isHighRes ? `${baseSize * HIGH_RES_SCALING}px` : `${baseSize}px`;
+    }
+
     // Cache DOM queries
     const iconTemplate = document.createElement('div');
     iconTemplate.className = 'flex items-center';
@@ -13,29 +22,29 @@
     infoTemplate.style.cssText = `
         background: rgba(0, 0, 0, 0.5);
         color: white;
-        padding: 5px;
+        padding: 8px;
         border-radius: 5px;
         margin-top: 5px;
         text-align: left;
-        font-size: 16px;
+        font-size: ${getScaledFontSize(18)};
         max-width: 100%;
         display: block;
     `;
 
     // Create a mapping for improvement type display names
     const IMPROVEMENT_DISPLAY_NAMES = {
-        "IMPROVEMENT_WOODCUTTER": "Woodcutter",
-        "IMPROVEMENT_WOODCUTTER_RESOURCE": "Woodcutter",
-        "IMPROVEMENT_MINE": "Mine",
-        "IMPROVEMENT_MINE_RESOURCE": "Mine",
-        "IMPROVEMENT_FISHING_BOAT": "Fishing Boat",
-        "IMPROVEMENT_FISHING_BOAT_RESOURCE": "Fishing Boat",
-        "IMPROVEMENT_FARM": "Farm",
-        "IMPROVEMENT_PASTURE": "Pasture",
-        "IMPROVEMENT_PLANTATION": "Plantation",
-        "IMPROVEMENT_CAMP": "Camp",
-        "IMPROVEMENT_CLAY_PIT": "Clay Pit",
-        "IMPROVEMENT_QUARRY": "Quarry"
+        "IMPROVEMENT_WOODCUTTER": "LOC_MOD_ETFI_IMPROVEMENT_WOODCUTTER",
+        "IMPROVEMENT_WOODCUTTER_RESOURCE": "LOC_MOD_ETFI_IMPROVEMENT_WOODCUTTER",
+        "IMPROVEMENT_MINE": "LOC_MOD_ETFI_IMPROVEMENT_MINE",
+        "IMPROVEMENT_MINE_RESOURCE": "LOC_MOD_ETFI_IMPROVEMENT_MINE",
+        "IMPROVEMENT_FISHING_BOAT": "LOC_MOD_ETFI_IMPROVEMENT_FISHING_BOAT",
+        "IMPROVEMENT_FISHING_BOAT_RESOURCE": "LOC_MOD_ETFI_IMPROVEMENT_FISHING_BOAT",
+        "IMPROVEMENT_FARM": "LOC_MOD_ETFI_IMPROVEMENT_FARM",
+        "IMPROVEMENT_PASTURE": "LOC_MOD_ETFI_IMPROVEMENT_PASTURE",
+        "IMPROVEMENT_PLANTATION": "LOC_MOD_ETFI_IMPROVEMENT_PLANTATION",
+        "IMPROVEMENT_CAMP": "LOC_MOD_ETFI_IMPROVEMENT_CAMP",
+        "IMPROVEMENT_CLAY_PIT": "LOC_MOD_ETFI_IMPROVEMENT_CLAY_PIT",
+        "IMPROVEMENT_QUARRY": "LOC_MOD_ETFI_IMPROVEMENT_QUARRY"
     };
 
     // Keep all improvement types in the sets
@@ -75,7 +84,7 @@
 
 	        const info = GameInfo.Constructibles.lookup(instance.type);
             if (info && targetSet.has(info.ConstructibleType)) {
-                const displayName = IMPROVEMENT_DISPLAY_NAMES[info.ConstructibleType] || info.ConstructibleType;
+                const displayName = Locale.compose(IMPROVEMENT_DISPLAY_NAMES[info.ConstructibleType] || info.ConstructibleType);
                 detailedCounts[displayName] = (detailedCounts[displayName] || 0) + 1;
             }
         }
@@ -117,16 +126,16 @@
             if (!instance?.location) continue;
 
             const buildingInfo = GameInfo.Constructibles.lookup(instance.type);
-            const buildingType = buildingInfo?.ConstructibleType;
+            if (!buildingInfo) continue;
+
+            const buildingType = buildingInfo.ConstructibleType;
             if (!buildingType) continue;
 
             if (SPECIAL_BUILDINGS.has(buildingType)) {
                 // Add special buildings as quarters
                 quarters.push({
                     isSpecial: true,
-                    buildings: [buildingType.replace('BUILDING_', '').split('_')
-                        .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-                        .join(' ')],
+                    buildings: [buildingInfo.Name], // Use the Name field from GameInfo
                     contribution: 1
                 });
             } else {
@@ -134,7 +143,7 @@
                 if (!tileStacks.has(key)) {
                     tileStacks.set(key, []);
                 }
-                tileStacks.get(key).push(buildingType);
+                tileStacks.get(key).push(buildingInfo.Name); // Store the Name instead of ConstructibleType
             }
         }
 
@@ -143,11 +152,7 @@
             if (buildings.length >= 2) {
                 quarters.push({
                     isSpecial: false,
-                    buildings: buildings.map(type => 
-                        type.replace('BUILDING_', '').split('_')
-                            .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-                            .join(' ')
-                    ),
+                    buildings: buildings, // Names are already localization keys
                     contribution: 1
                 });
             }
@@ -181,7 +186,7 @@
             total: domesticRoutes * 2,
             details: { 
                 count: domesticRoutes,
-                label: 'Trade Routes'
+                label: Locale.compose('LOC_MOD_ETFI_TRADE_ROUTES')
             }
         };
     }
@@ -278,7 +283,7 @@
             padding-bottom: 12px;
             margin-bottom: 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 16px;
+            font-size: ${getScaledFontSize(18)};
         `;
         
         config.icons.forEach(iconId => {
@@ -294,11 +299,11 @@
         // Style the breakdown section
         const breakdownDiv = document.createElement('div');
         breakdownDiv.style.cssText = `
-            font-size: 14px;
+            font-size: ${getScaledFontSize(16)};
             color: #bbb;
             margin-left: 4px;
             padding-top: 4px;
-            line-height: 1.6;
+            line-height: 1.8;
         `;
 
         if (totalCount.details) {
@@ -320,15 +325,19 @@
                 if (specialQuarters.length > 0) {
                     content += `
                         <div style="margin-bottom: 8px;">
-                            <div style="color: #fff; margin-bottom: 4px;">Special Quarters (+1 each):</div>
-                            ${specialQuarters.map(quarter => `
-                                <div style="padding-left: 8px;">
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <span>${quarter.buildings[0]}</span>
-                                        <span style="color: #fff;">+1</span>
+                            <div style="color: #fff; margin-bottom: 4px;">${Locale.compose("LOC_MOD_ETFI_SPECIAL_QUARTERS")}:</div>
+                            ${specialQuarters.map(quarter => {
+                                // Get localized building name
+                                const buildingName = Locale.compose(quarter.buildings[0]);
+                                return `
+                                    <div style="padding-left: 8px;">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span>${buildingName}</span>
+                                            <span style="color: #fff;">+1</span>
+                                        </div>
                                     </div>
-                                </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
                     `;
                 }
@@ -337,17 +346,21 @@
                 if (buildingQuarters.length > 0) {
                     content += `
                         <div style="margin-top: ${specialQuarters.length ? '8px' : '0'};">
-                            <div style="color: #fff; margin-bottom: 4px;">Building Quarters (+1 each):</div>
-                            ${buildingQuarters.map(quarter => `
-                                <div style="padding-left: 8px;">
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <div style="font-size: 13px; color: #bbb;">
-                                            ${quarter.buildings.join(' + ')}
+                            <div style="color: #fff; margin-bottom: 4px; font-size: ${getScaledFontSize(16)};">${Locale.compose("LOC_MOD_ETFI_BUILDING_QUARTERS")}:</div>
+                            ${buildingQuarters.map(quarter => {
+                                // Get localized building names
+                                const buildingNames = quarter.buildings.map(b => Locale.compose(b));
+                                return `
+                                    <div style="padding-left: 8px;">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <div style="font-size: ${getScaledFontSize(15)}; color: #bbb;">
+                                                ${buildingNames.join(' + ')}
+                                            </div>
+                                            <span style="color: #fff;">+1</span>
                                         </div>
-                                        <span style="color: #fff;">+1</span>
                                     </div>
-                                </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
                     `;
                 }
@@ -368,8 +381,8 @@
                 if (totalCount.multiplier > 1) {
                     content += `
                         <div style="display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                            <span>Era Bonus</span>
-                            <span style="color: #fff;">×${totalCount.multiplier}</span>
+                            <span>${Locale.compose("LOC_MOD_ETFI_ERA_BONUS")}</span>
+                            <span style="color: #fff;">x${totalCount.multiplier}</span>
                         </div>
                     `;
                 }

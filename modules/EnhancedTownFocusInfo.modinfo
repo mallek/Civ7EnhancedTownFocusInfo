@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Mod id="MLK_EnhancedTownFocusInfo" version="1.0"
+<Mod id="MLK_EnhancedTownFocusInfo" version="1.1.0"
 	xmlns="ModInfo">
 	<Properties>
 		<Name>LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO</Name>
@@ -11,6 +11,12 @@
 	<Dependencies>
 		<Mod id="base-standard" title="LOC_MODULE_BASE_STANDARD_NAME" />
 	</Dependencies>
+	<Files>
+		<File>script/EnhancedTownFocusInfo.js</File>
+		<File>text/ETFI_Text.sql</File>
+		<File>text/en_us/ModuleText.xml</File>
+		<File>text/ja_JP/ModuleText.xml</File>
+	</Files>
 	<ActionCriteria>
 		<Criteria id="always">
 			<AlwaysMet/>
@@ -19,6 +25,9 @@
 	<ActionGroups>
 		<ActionGroup id="enhanced-town-focus-info-actions" scope="game" criteria="always">
 			<Actions>
+				<UpdateText>
+					<Item>text/ETFI_Text.sql</Item>
+				</UpdateText>
 				<UIScripts>
 					<Item>script/EnhancedTownFocusInfo.js</Item>
 				</UIScripts>
@@ -27,6 +36,6 @@
 	</ActionGroups>
 	<LocalizedText>
 		<File>text/en_us/ModuleText.xml</File>
-		<File>l10n/ja_JP_Text.xml</File>
+		<File>text/ja_JP/ModuleText.xml</File>
 	</LocalizedText>
 </Mod> 
