@@ -104,6 +104,11 @@ Current language support:
 This project is licensed under the MIT License - see the LICENSE file for details
 
 ## Version History
+- 1.1.1: Trade Route Enhancement
+  - Added connected settlement names to Hub Town tooltip
+  - Improved tooltip formatting and readability
+  - Added development mode for easier debugging
+  - Font size consistency improvements
 - 1.1.0: Localization Update
   - Added Japanese language support
   - Reorganized file structure for better localization support

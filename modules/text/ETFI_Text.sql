@@ -17,6 +17,10 @@ VALUES
     ('LOC_MOD_ETFI_IMPROVEMENT_CLAY_PIT',	'en_US',	'Clay Pit'),
     ('LOC_MOD_ETFI_IMPROVEMENT_QUARRY',		'en_US',	'Quarry'),
     ('LOC_MOD_ETFI_TRADE_ROUTES',		'en_US',	'Trade Routes'),
+    ('LOC_MOD_ETFI_TRADE_CONNECTIONS',		'en_US',	'Connected Settlements'),
+    ('LOC_MOD_ETFI_CONNECTED_CITIES',		'en_US',	'Cities'),
+    ('LOC_MOD_ETFI_CONNECTED_TOWNS',		'en_US',	'Towns'),
+    ('LOC_MOD_ETFI_BONUS_PER_CONNECTION',	'en_US',	'Bonus per connection'),
     -- Japanese
     ('LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO',		'ja_JP',	'Enhanced Town Focus Info (専門化選択時の詳細な生産表示)'),
     ('LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION',	'ja_JP',	'都市の専門化を選択する際に、改善施設、建物、交易路からの詳細なボーナス内訳を表示します。'),
@@ -32,4 +36,8 @@ VALUES
     ('LOC_MOD_ETFI_IMPROVEMENT_CAMP',		'ja_JP',	'狩猟キャンプ'),
     ('LOC_MOD_ETFI_IMPROVEMENT_CLAY_PIT',	'ja_JP',	'粘土採掘場'),
     ('LOC_MOD_ETFI_IMPROVEMENT_QUARRY',		'ja_JP',	'採石場'),
-    ('LOC_MOD_ETFI_TRADE_ROUTES',		'ja_JP',	'交易路'); 
+    ('LOC_MOD_ETFI_TRADE_ROUTES',		'ja_JP',	'交易路'),
+    ('LOC_MOD_ETFI_TRADE_CONNECTIONS',		'ja_JP',	'接続された居住地'),
+    ('LOC_MOD_ETFI_CONNECTED_CITIES',		'ja_JP',	'都市'),
+    ('LOC_MOD_ETFI_CONNECTED_TOWNS',		'ja_JP',	'町'),
+    ('LOC_MOD_ETFI_BONUS_PER_CONNECTION',	'ja_JP',	'接続ごとのボーナス'); 

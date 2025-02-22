@@ -1,11 +1,38 @@
 (function() {
-    const VERSION = "1.1.0";
+    // Development constants (comment out in production)
+    const VERSION = "1.1.1";
+    const DEV_MODE = false;  // Enable to show version number and extra logging
+
+    // Constants
+    const HIGH_RES_SCALING = 1.75;
+    const FONT_SIZES = {
+        LARGE: 18,
+        MEDIUM: 16,
+        SMALL: 14
+    };
+
+    // State
     let tooltipObserver = null;
     let contentObserver = null;
     let lastTooltip = null;  // Track the last tooltip we modified
     
-    const BASE_FONT_SIZE = 18;
-    const HIGH_RES_SCALING = 1.75;
+    // Add safe logging function
+    function log(...args) {
+        try {
+            const message = args.map(arg => {
+                if (typeof arg === 'object') {
+                    return JSON.stringify(arg);
+                }
+                return String(arg);
+            }).join(' ');
+
+            if (console?.error) {
+                console.error(`[ETFI Debug] ${message}`);
+            }
+        } catch (e) {
+            // Silently fail if logging isn't available
+        }
+    }
 
     // Function to calculate scaled font size
     function getScaledFontSize(baseSize) {
@@ -26,7 +53,7 @@
         border-radius: 5px;
         margin-top: 5px;
         text-align: left;
-        font-size: ${getScaledFontSize(18)};
+        font-size: ${getScaledFontSize(FONT_SIZES.LARGE)};
         max-width: 100%;
         display: block;
     `;
@@ -169,24 +196,54 @@
     }
 
     function getTradeCount(cityID) {
-        if (!cityID) return { total: 0, details: {} };
-
-        const edges = Game.Trade.getCityGraphEdges(cityID);
-        if (!edges) return { total: 0, details: {} };
-
-        let domesticRoutes = 0;
-        for (const id of edges) {
-            const edge = Game.Trade.getGraphEdge(id);
-            if (edge?.toVertex?.cityId?.owner?.toString() === "0") {
-                domesticRoutes++;
-            }
+        if (!cityID) {
+            return { total: 0, details: {} };
         }
+
+        const city = Cities.get(cityID);
+        if (!city) {
+            return { total: 0, details: {} };
+        }
+
+        // Get all connected settlements
+        const connectedIds = city.getConnectedCities();
+        if (!connectedIds?.length) {
+            return { total: 0, details: {} };
+        }
+
+        // Group settlements by type with their names
+        const towns = [];
+        const cities = [];
         
+        connectedIds.forEach(id => {
+            const settlement = Cities.get(id);
+            if (!settlement) return;
+            
+            const name = Locale.compose(settlement.name);
+            if (settlement.isTown) {
+                towns.push(name);
+            } else {
+                cities.push(name);
+            }
+        });
+
+        // Each connection provides +2 to the Hub Town bonus
         return { 
-            total: domesticRoutes * 2,
-            details: { 
-                count: domesticRoutes,
-                label: Locale.compose('LOC_MOD_ETFI_TRADE_ROUTES')
+            total: (towns.length + cities.length) * 2,
+            details: {
+                label: Locale.compose('LOC_MOD_ETFI_TRADE_CONNECTIONS'),
+                breakdown: [
+                    {
+                        label: Locale.compose('LOC_MOD_ETFI_CONNECTED_CITIES'),
+                        count: cities.length,
+                        names: cities
+                    },
+                    {
+                        label: Locale.compose('LOC_MOD_ETFI_CONNECTED_TOWNS'),
+                        count: towns.length,
+                        names: towns
+                    }
+                ]
             }
         };
     }
@@ -274,7 +331,21 @@
         newInfo.style.flexDirection = 'column';
         newInfo.style.gap = '8px';
         newInfo.style.padding = '8px';
+
+        // Development version display 
+        if (DEV_MODE) {
+            const versionDiv = document.createElement('div');
+            versionDiv.style.cssText = `
+                color: #888;
+                font-size: ${getScaledFontSize(FONT_SIZES.SMALL)};
+                text-align: right;
+                margin-bottom: 4px;
+            `;
+            versionDiv.textContent = `v${VERSION}`;
+            newInfo.appendChild(versionDiv);
+        }
         
+
         // Style the total section
         const totalDiv = document.createElement('div');
         totalDiv.style.cssText = `
@@ -283,7 +354,7 @@
             padding-bottom: 12px;
             margin-bottom: 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: ${getScaledFontSize(18)};
+            font-size: ${getScaledFontSize(FONT_SIZES.LARGE)};
         `;
         
         config.icons.forEach(iconId => {
@@ -299,7 +370,7 @@
         // Style the breakdown section
         const breakdownDiv = document.createElement('div');
         breakdownDiv.style.cssText = `
-            font-size: ${getScaledFontSize(16)};
+            font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)};
             color: #bbb;
             margin-left: 4px;
             padding-top: 4px;
@@ -307,11 +378,29 @@
         `;
 
         if (totalCount.details) {
-            if (totalCount.details.text !== undefined || totalCount.details.label !== undefined) {
+            if (totalCount.details.breakdown !== undefined) {
+                const parts = totalCount.details.breakdown
+                    .map(({ label, count, names }) => `
+                        <div style="margin: 4px 0;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>${label}</span>
+                                <span style="color: #fff;">${count}</span>
+                            </div>
+                            ${names ? `
+                                <div style="padding-left: 12px; font-size: ${getScaledFontSize(FONT_SIZES.SMALL)}; color: #aaa;">
+                                    ${names.join(', ')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `)
+                    .join('');
+
                 breakdownDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>${totalCount.details.label || totalCount.details.text}</span>
-                        <span style="color: #fff;">${totalCount.details.count}</span>
+                    <div style="margin-bottom: 4px;">${totalCount.details.label}:</div>
+                    ${parts}
+                    <div style="display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                        <span>${Locale.compose("LOC_MOD_ETFI_BONUS_PER_CONNECTION")}</span>
+                        <span style="color: #fff;">x2</span>
                     </div>
                 `;
             } else if (totalCount.details.quarters !== undefined) {
@@ -346,14 +435,14 @@
                 if (buildingQuarters.length > 0) {
                     content += `
                         <div style="margin-top: ${specialQuarters.length ? '8px' : '0'};">
-                            <div style="color: #fff; margin-bottom: 4px; font-size: ${getScaledFontSize(16)};">${Locale.compose("LOC_MOD_ETFI_BUILDING_QUARTERS")}:</div>
+                            <div style="color: #fff; margin-bottom: 4px; font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)};">${Locale.compose("LOC_MOD_ETFI_BUILDING_QUARTERS")}:</div>
                             ${buildingQuarters.map(quarter => {
                                 // Get localized building names
                                 const buildingNames = quarter.buildings.map(b => Locale.compose(b));
                                 return `
                                     <div style="padding-left: 8px;">
                                         <div style="display: flex; justify-content: space-between;">
-                                            <div style="font-size: ${getScaledFontSize(15)}; color: #bbb;">
+                                            <div style="font-size: ${getScaledFontSize(FONT_SIZES.SMALL)}; color: #bbb;">
                                                 ${buildingNames.join(' + ')}
                                             </div>
                                             <span style="color: #fff;">+1</span>
@@ -366,6 +455,13 @@
                 }
 
                 breakdownDiv.innerHTML = content;
+            } else if (totalCount.details.text !== undefined || totalCount.details.label !== undefined) {
+                breakdownDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>${totalCount.details.label || totalCount.details.text}</span>
+                        <span style="color: #fff;">${totalCount.details.count}</span>
+                    </div>
+                `;
             } else {
                 // Improvements breakdown
                 const parts = Object.entries(totalCount.details)
