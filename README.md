@@ -15,40 +15,32 @@ Shows detailed breakdown of Science and Culture bonuses from:
 
 ![Urban Center Focus Screenshot](screenshots/urban_center.png)
 
-### Granary Focus
+### Farming Town Focus
 Shows Food yield bonuses from:
 - Farms
 - Pastures
 - Plantations
-- Era multiplier bonuses
+- Era multiplier bonuses (2x in Exploration Age, 3x in Modern Age)
 
-![Granary Focus Screenshot](screenshots/granary.png)
+![Farming Town Focus Screenshot](screenshots/farming_town.png)
 
-### Fishing Focus
-Displays Food bonuses from:
-- Fishing Boats
-- Other food-producing improvements
-- Era multiplier effects
-
-![Fishing Focus Screenshot](screenshots/fishing.png)
-
-### Production Focus
+### Mining Town Focus
 Details Production bonuses from:
 - Mines
 - Woodcutters
 - Quarries
 - Clay Pits
 - Camps
-- Era multiplier effects
+- Era multiplier effects (2x in Exploration Age, 3x in Modern Age)
 
-![Production Focus Screenshot](screenshots/production.png)
+![Mining Town Focus Screenshot](screenshots/mining_town.png)
 
-### Inn Focus
+### Hub Town Focus
 Shows Diplomacy bonuses from:
-- Domestic trade routes
-- Detailed route count
+- Domestic trade routes (+2 per route)
+- Detailed route count and breakdown
 
-![Inn Focus Screenshot](screenshots/inn.png)
+![Hub Town Focus Screenshot](screenshots/hub_town.png)
 
 ## Installation
 1. Subscribe to the mod through the Official Civilization VII Mod Browser
@@ -79,10 +71,8 @@ Feel free to contribute to this project by:
 This project is licensed under the MIT License - see the LICENSE file for details
 
 ## Version History
-- 1.0.0: Initial release of Enhanced Town Focus Info
+- 1.0.5: Initial release of Enhanced Town Focus Info
   - Complete rewrite of tooltip system
   - Added detailed breakdowns for all focus types
   - Improved visual presentation
   - Added era multiplier display
-
-*Note: Replace the screenshot placeholders with actual screenshots once you have them.* 
