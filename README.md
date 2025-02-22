@@ -13,7 +13,7 @@ Shows detailed breakdown of Science and Culture bonuses from:
 - Building Quarters (stacked buildings)
 - Individual contribution of each quarter
 
-<img src="screenshots/urban_center.png" width="600" alt="Urban Center Focus Screenshot">
+<img src="screenshots/urban_center.png" width="300" alt="Urban Center Focus Screenshot">
 
 ### Farming Town Focus
 Shows Food yield bonuses from:
@@ -22,7 +22,7 @@ Shows Food yield bonuses from:
 - Plantations
 - Era multiplier bonuses (2x in Exploration Age, 3x in Modern Age)
 
-<img src="screenshots/farming_town.png" width="600" alt="Farming Town Focus Screenshot">
+<img src="screenshots/farming_town.png" width="300" alt="Farming Town Focus Screenshot">
 
 ### Mining Town Focus
 Details Production bonuses from:
@@ -33,14 +33,14 @@ Details Production bonuses from:
 - Camps
 - Era multiplier effects (2x in Exploration Age, 3x in Modern Age)
 
-<img src="screenshots/mining_town.png" width="600" alt="Mining Town Focus Screenshot">
+<img src="screenshots/mining_town.png" width="300" alt="Mining Town Focus Screenshot">
 
 ### Hub Town Focus
 Shows Diplomacy bonuses from:
 - Domestic trade routes (+2 per route)
 - Detailed route count and breakdown
 
-<img src="screenshots/hub_town.png" width="600" alt="Hub Town Focus Screenshot">
+<img src="screenshots/hub_town.png" width="300" alt="Hub Town Focus Screenshot">
 
 ## Installation
 
