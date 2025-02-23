@@ -16,6 +16,7 @@
 		<File>text/ETFI_Text.sql</File>
 		<File>text/en_us/ModuleText.xml</File>
 		<File>text/ja_JP/ModuleText.xml</File>
+		<File>text/it_IT/ModuleText.xml</File>
 	</Files>
 	<ActionCriteria>
 		<Criteria id="always">
@@ -37,5 +38,6 @@
 	<LocalizedText>
 		<File>text/en_us/ModuleText.xml</File>
 		<File>text/ja_JP/ModuleText.xml</File>
+		<File>text/it_IT/ModuleText.xml</File>
 	</LocalizedText>
 </Mod> 
