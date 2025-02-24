@@ -1,23 +1,12 @@
 (function() {
-    // Development constants (comment out in production)
-    const VERSION = "1.1.1";
+    // Development constants (must be first)
+    const VERSION = "1.1.3";  // Increment version
     const DEV_MODE = false;  // Enable to show version number and extra logging
 
-    // Constants
-    const HIGH_RES_SCALING = 1.75;
-    const FONT_SIZES = {
-        LARGE: 18,
-        MEDIUM: 16,
-        SMALL: 14
-    };
-
-    // State
-    let tooltipObserver = null;
-    let contentObserver = null;
-    let lastTooltip = null;  // Track the last tooltip we modified
-    
-    // Add safe logging function
+    // Add safe logging function (must be second)
     function log(...args) {
+        if (!DEV_MODE) return; // Skip logging if not in dev mode
+        
         try {
             const message = args.map(arg => {
                 if (typeof arg === 'object') {
@@ -34,6 +23,24 @@
         }
     }
 
+    // Now we can use log
+    log('ETFI Initializing...');
+
+    // Constants
+    const HIGH_RES_SCALING = 1.75;
+    const FONT_SIZES = {
+        LARGE: 18,
+        MEDIUM: 16,
+        SMALL: 14
+    };
+
+    // State
+    let tooltipObserver = null;
+    let contentObserver = null;
+    let lastTooltip = null;  // Track the last tooltip we modified
+    let resourceCache = new Map(); // Cache resource data by city ID
+    let lastCityID = null; // Track last city ID to clear cache when city changes
+    
     // Function to calculate scaled font size
     function getScaledFontSize(baseSize) {
         const isHighRes = window.devicePixelRatio > 1 || window.innerWidth > 2560;
@@ -92,7 +99,8 @@
         "LOC_PROJECT_TOWN_GRANARY_NAME",
         "LOC_PROJECT_TOWN_FISHING_NAME",
         "LOC_PROJECT_TOWN_PRODUCTION_NAME",
-        "LOC_PROJECT_TOWN_INN_NAME"
+        "LOC_PROJECT_TOWN_INN_NAME",
+        "LOC_PROJECT_TOWN_TRADE_NAME"
     ]);
 
 	function getImprovementCount(cityID, targetImprovements) {
@@ -248,6 +256,78 @@
         };
     }
 
+    function clearResourceCache() {
+        resourceCache.clear();
+        lastCityID = null;
+    }
+
+    function getResourceCount(cityID) {
+        if (!cityID) return { total: 0, details: {} };
+
+        const city = Cities.get(cityID);
+        if (!city) return { total: 0, details: {} };
+
+        // Check if we have cached data for this city
+        const cacheKey = `${city.id.owner}-${city.id.id}`;
+        if (resourceCache.has(cacheKey)) {
+            return resourceCache.get(cacheKey);
+        }
+
+        const resources = new Map(); // Map to store resource counts by type
+
+        // Get city location and purchased plots
+        const cityLocation = city.location;
+        const purchasedPlotIndices = city.getPurchasedPlots();
+
+        if (!cityLocation) return { total: 0, details: {} };
+
+        // Start with the city center plot
+        const plots = [cityLocation];
+        
+        // Convert purchased plot indices to coordinates and add them
+        if (purchasedPlotIndices?.length) {
+            for (const plotIndex of purchasedPlotIndices) {
+                const plotCoords = GameplayMap.getLocationFromIndex(plotIndex);
+                if (plotCoords) {
+                    plots.push(plotCoords);
+                }
+            }
+        }
+
+        // Check each plot for resources
+        for (const plot of plots) {
+            if (!plot.x || !plot.y) continue;
+
+            const resourceType = GameplayMap.getResourceType(plot.x, plot.y);
+            if (resourceType === ResourceTypes.NO_RESOURCE) continue;
+
+            const resourceInfo = GameInfo.Resources.lookup(resourceType);
+            if (!resourceInfo) continue;
+
+            const resourceName = Locale.compose(resourceInfo.Name);
+            resources.set(resourceName, (resources.get(resourceName) || 0) + 1);
+        }
+
+        const total = Array.from(resources.values()).reduce((sum, count) => sum + count, 0);
+        const happiness = total * 2; // Each resource provides +2 happiness
+
+        const result = {
+            total: happiness,
+            details: {
+                resources: Array.from(resources.entries()).map(([name, count]) => ({
+                    name,
+                    count
+                })),
+                resourceCount: total
+            }
+        };
+
+        // Cache the result
+        resourceCache.set(cacheKey, result);
+
+        return result;
+    }
+
     const TOOLTIP_CONFIGS = {
         "LOC_PROJECT_TOWN_URBAN_CENTER_NAME": {
             counter: getBuildingCount,
@@ -268,6 +348,10 @@
         "LOC_PROJECT_TOWN_INN_NAME": {
             counter: getTradeCount,
             icons: ["YIELD_DIPLOMACY"]
+        },
+        "LOC_PROJECT_TOWN_TRADE_NAME": {
+            counter: getResourceCount,
+            icons: ["YIELD_HAPPINESS"]
         }
     };
 
@@ -308,23 +392,33 @@
 
         const cityID = getCityID();
         if (!cityID) {
+            log('No city ID found');
             clearTooltipContent(tooltip);
-	        return;
-	    }
+            return;
+        }
 
         const l10nId = tooltip.querySelector("[data-l10n-id]")?.getAttribute("data-l10n-id");
+        log('Tooltip ID:', l10nId);
+
         if (!TOOLTIP_IDS.has(l10nId)) {
+            log('Tooltip ID not in tracked set:', l10nId);
             clearTooltipContent(tooltip);
-	            return;
-	    }
-	    
+            return;
+        }
+        
         const config = TOOLTIP_CONFIGS[l10nId];
+        log('Found config for tooltip:', l10nId);
+
         const tooltipContent = tooltip.querySelector('.tooltip__content');
-        if (!tooltipContent) return;
+        if (!tooltipContent) {
+            log('No tooltip content found');
+            return;
+        }
 
         clearTooltipContent(tooltip);
 
         const totalCount = config.counter(cityID);
+        log('Counter result:', totalCount);
         
         const newInfo = infoTemplate.cloneNode(true);
         newInfo.style.display = 'flex';
@@ -357,14 +451,28 @@
             font-size: ${getScaledFontSize(FONT_SIZES.LARGE)};
         `;
         
-        config.icons.forEach(iconId => {
+        if (l10nId === "LOC_PROJECT_TOWN_TRADE_NAME") {
+            // Special handling for Trade focus to show happiness calculation
             const iconDiv = iconTemplate.cloneNode(true);
             iconDiv.innerHTML = `
-                <fxs-icon data-icon-id="${iconId}" class="size-6 mr-1"></fxs-icon>
+                <fxs-icon data-icon-id="${config.icons[0]}" class="size-6 mr-1"></fxs-icon>
                 <strong>+${totalCount.total}</strong>
+                <span style="color: #bbb; margin-left: 8px; font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)};">
+                    (${totalCount.details.resourceCount} ${Locale.compose("LOC_MOD_ETFI_RESOURCES")} × 2)
+                </span>
             `;
             totalDiv.appendChild(iconDiv);
-        });
+        } else {
+            // Regular handling for other focus types
+            config.icons.forEach(iconId => {
+                const iconDiv = iconTemplate.cloneNode(true);
+                iconDiv.innerHTML = `
+                    <fxs-icon data-icon-id="${iconId}" class="size-6 mr-1"></fxs-icon>
+                    <strong>+${totalCount.total}</strong>
+                `;
+                totalDiv.appendChild(iconDiv);
+            });
+        }
         newInfo.appendChild(totalDiv);
 
         // Style the breakdown section
@@ -462,6 +570,26 @@
                         <span style="color: #fff;">${totalCount.details.count}</span>
                     </div>
                 `;
+            } else if (totalCount.details.resources !== undefined) {
+                const resources = totalCount.details.resources
+                    .map(({name, count}) => `
+                        <div style="display: flex; justify-content: space-between; margin: 2px 0;">
+                            <span>${name}</span>
+                            <span style="color: #fff;">${count}</span>
+                        </div>
+                    `)
+                    .join('');
+
+                breakdownDiv.innerHTML = `
+                    <div style="margin-bottom: 8px;">
+                        ${Locale.compose("LOC_MOD_ETFI_TOTAL_RESOURCES")}: ${totalCount.details.resourceCount}
+                    </div>
+                    ${resources}
+                    <div style="display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                        <span>${Locale.compose("LOC_MOD_ETFI_HAPPINESS_PER_RESOURCE")}</span>
+                        <span style="color: #fff;">x2</span>
+                    </div>
+                `;
             } else {
                 // Improvements breakdown
                 const parts = Object.entries(totalCount.details)
@@ -491,7 +619,10 @@
     }
 
     function startTooltipObserver() {
+        log('Starting tooltip observer...');
+        
         const tooltipContainer = document.querySelector('.tooltip-container') || document.body;
+        log('Found tooltip container:', tooltipContainer ? 'yes' : 'no');
         
         if (tooltipObserver) {
             tooltipObserver.disconnect();
@@ -507,6 +638,7 @@
                         clearTooltipContent(node);
                         if (lastTooltip === node) {
                             lastTooltip = null;
+                            clearResourceCache(); // Clear cache when tooltip is removed
                         }
                     }
                 }
@@ -528,15 +660,31 @@
             childList: true, 
             subtree: true
         });
+        log('Tooltip observer started');
     }
 
     function getCityID() {
+        // First try getting selected city
         let gcity = UI.Player.getHeadSelectedCity();
-        if (!gcity || !gcity.id) {
-            return null;
+        if (gcity?.id) {
+            return gcity;
         }
-        return gcity;
+
+        // If no selected city, try getting city from tooltip
+        const tooltip = document.querySelector('fxs-tooltip.plot-tooltip');
+        if (!tooltip) return null;
+
+        const plotCoord = {
+            x: parseInt(tooltip.getAttribute('data-plot-x')),
+            y: parseInt(tooltip.getAttribute('data-plot-y'))
+        };
+
+        if (isNaN(plotCoord.x) || isNaN(plotCoord.y)) return null;
+
+        const city = GameplayMap.getCityAt(plotCoord.x, plotCoord.y);
+        return city;
     }
 
     startTooltipObserver();
+    log('ETFI Initialization complete');
 })();
