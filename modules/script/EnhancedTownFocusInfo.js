@@ -1,6 +1,6 @@
 (function() {
     // Development constants
-    const VERSION = "1.1.2";
+    const VERSION = "1.1.4";
     const DEV_MODE = false;
 
     // Add safe logging function
