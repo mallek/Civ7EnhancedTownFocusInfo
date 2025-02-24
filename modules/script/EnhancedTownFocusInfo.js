@@ -600,7 +600,7 @@
                     .map(([name, count]) => `
                         <div style="display: flex; justify-content: space-between; margin: 2px 0;">
                             <span>${name}</span>
-                            <span style="color: #fff;">${count}</span>
+                            <span style="color: #fff;">+${count}</span>
                         </div>
                     `)
                     .join('');
