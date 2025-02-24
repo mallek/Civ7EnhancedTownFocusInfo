@@ -46,8 +46,7 @@ VALUES
     ('LOC_MOD_ETFI_BONUS_PER_CONNECTION',	'ja_JP',	'接続ごとのボーナス'),
     ('LOC_MOD_ETFI_TOTAL_RESOURCES',	        'ja_JP',	'資源の合計'),
     ('LOC_MOD_ETFI_HAPPINESS_PER_RESOURCE',	'ja_JP',	'資源ごとの幸福度'),
-    ('LOC_MOD_ETFI_RESOURCES',	        'ja_JP',	'資源'); 
-    ('LOC_MOD_ETFI_BONUS_PER_CONNECTION',	'ja_JP',	'接続ごとのボーナス'),
+    ('LOC_MOD_ETFI_RESOURCES',	        'ja_JP',	'資源'),
     -- Italian
     ('LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO',		        'it_IT',	'Informazioni avanzate sulla specializzazione cittadina'),
     ('LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION',	'it_IT',	'Visualizzazione avanzata dei bonus di produzione della specializzazione cittadina in Civ7, mostrando dettagli sugli edifici, i quartieri e le rotte commerciali che contribuiscono ai bonus di specializzazione.'),
@@ -67,4 +66,7 @@ VALUES
     ('LOC_MOD_ETFI_TRADE_CONNECTIONS',		            'it_IT',	'Collegamenti commerciali'),
     ('LOC_MOD_ETFI_CONNECTED_CITIES',		            'it_IT',	'Città'),
     ('LOC_MOD_ETFI_CONNECTED_TOWNS',		            'it_IT',	'Paesi'),
-    ('LOC_MOD_ETFI_BONUS_PER_CONNECTION',	            'it_IT',	'Bonus per connessione');
+    ('LOC_MOD_ETFI_BONUS_PER_CONNECTION',	            'it_IT',	'Bonus per connessione'),
+    ('LOC_MOD_ETFI_TOTAL_RESOURCES',	                    'it_IT',	'Risorse totali'),
+    ('LOC_MOD_ETFI_HAPPINESS_PER_RESOURCE',	            'it_IT',	'Felicità per risorsa'),
+    ('LOC_MOD_ETFI_RESOURCES',	                        'it_IT',	'Risorse');
