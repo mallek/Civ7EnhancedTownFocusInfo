@@ -21,6 +21,9 @@ VALUES
     ('LOC_MOD_ETFI_CONNECTED_CITIES',		'en_US',	'Cities'),
     ('LOC_MOD_ETFI_CONNECTED_TOWNS',		'en_US',	'Towns'),
     ('LOC_MOD_ETFI_BONUS_PER_CONNECTION',	'en_US',	'Bonus per connection'),
+    ('LOC_MOD_ETFI_TOTAL_RESOURCES',	        'en_US',	'Total Resources'),
+    ('LOC_MOD_ETFI_HAPPINESS_PER_RESOURCE',	'en_US',	'Happiness per Resource'),
+    ('LOC_MOD_ETFI_RESOURCES',	        'en_US',	'Resources'),
     -- Japanese
     ('LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO',		'ja_JP',	'Enhanced Town Focus Info (専門化選択時の詳細な生産表示)'),
     ('LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION',	'ja_JP',	'都市の専門化を選択する際に、改善施設、建物、交易路からの詳細なボーナス内訳を表示します。'),
@@ -40,4 +43,7 @@ VALUES
     ('LOC_MOD_ETFI_TRADE_CONNECTIONS',		'ja_JP',	'接続された居住地'),
     ('LOC_MOD_ETFI_CONNECTED_CITIES',		'ja_JP',	'都市'),
     ('LOC_MOD_ETFI_CONNECTED_TOWNS',		'ja_JP',	'町'),
-    ('LOC_MOD_ETFI_BONUS_PER_CONNECTION',	'ja_JP',	'接続ごとのボーナス'); 
+    ('LOC_MOD_ETFI_BONUS_PER_CONNECTION',	'ja_JP',	'接続ごとのボーナス'),
+    ('LOC_MOD_ETFI_TOTAL_RESOURCES',	        'ja_JP',	'資源の合計'),
+    ('LOC_MOD_ETFI_HAPPINESS_PER_RESOURCE',	'ja_JP',	'資源ごとの幸福度'),
+    ('LOC_MOD_ETFI_RESOURCES',	        'ja_JP',	'資源'); 

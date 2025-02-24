@@ -42,6 +42,14 @@ Shows Diplomacy bonuses from:
 
 <img src="screenshots/hub_town.png" width="300" alt="Hub Town Focus Screenshot">
 
+### Trade Town Focus
+Shows Happiness bonuses from:
+- Resource tiles in town territory
+- Visual resource icons with counts
+- Happiness multiplier (+2 per resource)
+
+<img src="screenshots/trade_town.png" width="300" alt="Trade Town Focus Screenshot">
+
 ## Installation
 
 ### Method 1: Steam Workshop (Coming Soon!)
@@ -104,6 +112,21 @@ Current language support:
 This project is licensed under the MIT License - see the LICENSE file for details
 
 ## Version History
+- 1.1.4: Trade Town Enhancement
+  - Added resource icons to Trade Town tooltip
+  - Improved resource counting accuracy
+  - Added caching for better performance
+  - Cleaned up tooltip formatting
+- 1.1.3: UI Polish Update
+  - Added + signs to all yield numbers
+  - Increased icon sizes for better visibility
+  - Improved tooltip spacing and alignment
+  - Fixed font scaling issues
+- 1.1.2: Resource System Update
+  - Added detailed resource breakdown for Trade Towns
+  - Improved territory tile detection
+  - Added happiness calculation display
+  - Fixed various edge cases in resource counting
 - 1.1.1: Trade Route Enhancement
   - Added connected settlement names to Hub Town tooltip
   - Improved tooltip formatting and readability
