@@ -1,6 +1,6 @@
 (function() {
     // Development constants (must be first)
-    const VERSION = "1.1.3";  // Increment version
+    const VERSION = "1.1.4";  // Increment version
     const DEV_MODE = false;  // Enable to show version number and extra logging
 
     // Add safe logging function (must be second)
@@ -305,18 +305,23 @@
             if (!resourceInfo) continue;
 
             const resourceName = Locale.compose(resourceInfo.Name);
-            resources.set(resourceName, (resources.get(resourceName) || 0) + 1);
+            const iconId = resourceInfo.ResourceType; // Get the resource type as icon ID
+            resources.set(resourceName, {
+                count: (resources.get(resourceName)?.count || 0) + 1,
+                iconId
+            });
         }
 
-        const total = Array.from(resources.values()).reduce((sum, count) => sum + count, 0);
+        const total = Array.from(resources.values()).reduce((sum, data) => sum + data.count, 0);
         const happiness = total * 2; // Each resource provides +2 happiness
 
         const result = {
             total: happiness,
             details: {
-                resources: Array.from(resources.entries()).map(([name, count]) => ({
+                resources: Array.from(resources.entries()).map(([name, data]) => ({
                     name,
-                    count
+                    count: data.count,
+                    iconId: data.iconId
                 })),
                 resourceCount: total
             }
@@ -457,9 +462,6 @@
             iconDiv.innerHTML = `
                 <fxs-icon data-icon-id="${config.icons[0]}" class="size-6 mr-1"></fxs-icon>
                 <strong>+${totalCount.total}</strong>
-                <span style="color: #bbb; margin-left: 8px; font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)};">
-                    (${totalCount.details.resourceCount} ${Locale.compose("LOC_MOD_ETFI_RESOURCES")} × 2)
-                </span>
             `;
             totalDiv.appendChild(iconDiv);
         } else {
@@ -572,10 +574,12 @@
                 `;
             } else if (totalCount.details.resources !== undefined) {
                 const resources = totalCount.details.resources
-                    .map(({name, count}) => `
+                    .map(({name, count, iconId}) => `
                         <div style="display: flex; justify-content: space-between; margin: 2px 0;">
-                            <span>${name}</span>
-                            <span style="color: #fff;">${count}</span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <fxs-icon data-icon-id="${iconId}" class="size-8" style="min-width: 24px; min-height: 24px;"></fxs-icon>
+                            </span>
+                            <span style="color: #fff;">+${count}</span>
                         </div>
                     `)
                     .join('');
