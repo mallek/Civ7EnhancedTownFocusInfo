@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Database>
+	<LocalizedText>
+		<Replace Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO" Language="it_IT">
+			<Text>Enhanced Town Focus Info</Text>
+		</Replace>
+		<Replace Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION" Language="it_IT">
+			<Text>Una visualizzazione migliorata dei bonus di rendimento del focus cittadino in Civ7, che mostra ripartizioni dettagliate dei miglioramenti, degli edifici e delle rotte commerciali che contribuiscono ai bonus di specializzazione.</Text>
+		</Replace>
+	</LocalizedText>
+</Database> 

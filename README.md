@@ -101,17 +101,24 @@ To contribute a new translation:
 Current language support:
 - English (en_US)
 - Japanese (ja_JP)
+- Italian (it_IT)
 - *More coming soon with community help!*
 
 ## Credits
 - Original mod concept by Yamada
 - Enhanced and maintained by Mallek
+- Italian translation by RockFactory
 - Thanks to the Civilization VII modding community
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details
 
 ## Version History
+- 1.1.5: Italian Localization Update
+  - Added Italian language support (thanks to RockFactory!)
+  - Fixed semicolon issues in localization file
+  - Improved code organization
+  - Updated documentation
 - 1.1.4: Trade Town Enhancement
   - Added resource icons to Trade Town tooltip
   - Improved resource counting accuracy
