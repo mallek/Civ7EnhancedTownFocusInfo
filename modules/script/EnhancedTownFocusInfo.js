@@ -1,30 +1,17 @@
 (function() {
-    // Development constants (must be first)
-    const VERSION = "1.1.4";  // Increment version
-    const DEV_MODE = false;  // Enable to show version number and extra logging
+    // Development constants
+    const VERSION = "1.1.2";
+    const DEV_MODE = false;
 
-    // Add safe logging function (must be second)
+    // Add safe logging function
     function log(...args) {
-        if (!DEV_MODE) return; // Skip logging if not in dev mode
-        
+        if (!DEV_MODE) return;
         try {
-            const message = args.map(arg => {
-                if (typeof arg === 'object') {
-                    return JSON.stringify(arg);
-                }
-                return String(arg);
-            }).join(' ');
-
-            if (console?.error) {
-                console.error(`[ETFI Debug] ${message}`);
-            }
-        } catch (e) {
-            // Silently fail if logging isn't available
-        }
+            console.error(`[ETFI Debug] ${args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+            ).join(' ')}`);
+        } catch (e) {}
     }
-
-    // Now we can use log
-    log('ETFI Initializing...');
 
     // Constants
     const HIGH_RES_SCALING = 1.75;
@@ -34,76 +21,198 @@
         SMALL: 14
     };
 
-    // State
-    let tooltipObserver = null;
-    let contentObserver = null;
-    let lastTooltip = null;  // Track the last tooltip we modified
-    let resourceCache = new Map(); // Cache resource data by city ID
-    let lastCityID = null; // Track last city ID to clear cache when city changes
+    // Cache DOM templates
+    const iconTemplate = Object.assign(document.createElement('div'), {
+        className: 'flex items-center'
+    });
     
-    // Function to calculate scaled font size
+    const infoTemplate = Object.assign(document.createElement('div'), {
+        className: 'additional-info',
+        style: `
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 5px;
+            text-align: left;
+            font-size: ${getScaledFontSize(FONT_SIZES.LARGE)};
+            max-width: 100%;
+            display: block;
+        `
+    });
+
+    // Optimization: Pre-compile localization keys
+    const L10N = {
+        ERA_BONUS: Locale.compose("LOC_MOD_ETFI_ERA_BONUS"),
+        TOTAL_RESOURCES: Locale.compose("LOC_MOD_ETFI_TOTAL_RESOURCES"),
+        HAPPINESS_PER_RESOURCE: Locale.compose("LOC_MOD_ETFI_HAPPINESS_PER_RESOURCE"),
+    };
+
+    // State management
+    const state = {
+        tooltipObserver: null,
+        contentObserver: null,
+        lastTooltip: null,
+        resourceCache: new Map(),
+        lastCityID: null
+    };
+    
+    const IMPROVEMENTS = {
+        displayNames: {
+            "IMPROVEMENT_WOODCUTTER": "LOC_MOD_ETFI_IMPROVEMENT_WOODCUTTER",
+            "IMPROVEMENT_WOODCUTTER_RESOURCE": "LOC_MOD_ETFI_IMPROVEMENT_WOODCUTTER",
+            "IMPROVEMENT_MINE": "LOC_MOD_ETFI_IMPROVEMENT_MINE",
+            "IMPROVEMENT_MINE_RESOURCE": "LOC_MOD_ETFI_IMPROVEMENT_MINE",
+            "IMPROVEMENT_FISHING_BOAT": "LOC_MOD_ETFI_IMPROVEMENT_FISHING_BOAT",
+            "IMPROVEMENT_FISHING_BOAT_RESOURCE": "LOC_MOD_ETFI_IMPROVEMENT_FISHING_BOAT",
+            "IMPROVEMENT_FARM": "LOC_MOD_ETFI_IMPROVEMENT_FARM",
+            "IMPROVEMENT_PASTURE": "LOC_MOD_ETFI_IMPROVEMENT_PASTURE",
+            "IMPROVEMENT_PLANTATION": "LOC_MOD_ETFI_IMPROVEMENT_PLANTATION",
+            "IMPROVEMENT_CAMP": "LOC_MOD_ETFI_IMPROVEMENT_CAMP",
+            "IMPROVEMENT_CLAY_PIT": "LOC_MOD_ETFI_IMPROVEMENT_CLAY_PIT",
+            "IMPROVEMENT_QUARRY": "LOC_MOD_ETFI_IMPROVEMENT_QUARRY"
+        },
+        sets: {
+            food: new Set([
+                "IMPROVEMENT_FARM",
+                "IMPROVEMENT_PASTURE",
+                "IMPROVEMENT_PLANTATION",
+                "IMPROVEMENT_FISHING_BOAT",
+                "IMPROVEMENT_FISHING_BOAT_RESOURCE"
+            ]),
+            production: new Set([
+                "IMPROVEMENT_CAMP",
+                "IMPROVEMENT_WOODCUTTER",
+                "IMPROVEMENT_WOODCUTTER_RESOURCE",
+                "IMPROVEMENT_CLAY_PIT",
+                "IMPROVEMENT_MINE",
+                "IMPROVEMENT_MINE_RESOURCE",
+                "IMPROVEMENT_QUARRY"
+            ])
+        }
+    };
+
+    // Tooltip configuration (moved to separate object)
+    const TOOLTIPS = {
+        ids: new Set([
+            "LOC_PROJECT_TOWN_URBAN_CENTER_NAME",
+            "LOC_PROJECT_TOWN_GRANARY_NAME",
+            "LOC_PROJECT_TOWN_FISHING_NAME",
+            "LOC_PROJECT_TOWN_PRODUCTION_NAME",
+            "LOC_PROJECT_TOWN_INN_NAME",
+            "LOC_PROJECT_TOWN_TRADE_NAME"
+        ]),
+        configs: {
+            "LOC_PROJECT_TOWN_URBAN_CENTER_NAME": {
+                counter: getBuildingCount,
+                icons: ["YIELD_SCIENCE", "YIELD_CULTURE"]
+            },
+            "LOC_PROJECT_TOWN_GRANARY_NAME": {
+                counter: (cityID) => getImprovementCount(cityID, Array.from(IMPROVEMENTS.sets.food)),
+                icons: ["YIELD_FOOD"]
+            },
+            "LOC_PROJECT_TOWN_FISHING_NAME": {
+                counter: (cityID) => getImprovementCount(cityID, Array.from(IMPROVEMENTS.sets.food)),
+                icons: ["YIELD_FOOD"]
+            },
+            "LOC_PROJECT_TOWN_PRODUCTION_NAME": {
+                counter: (cityID) => getImprovementCount(cityID, Array.from(IMPROVEMENTS.sets.production)),
+                icons: ["YIELD_PRODUCTION"]
+            },
+            "LOC_PROJECT_TOWN_INN_NAME": {
+                counter: getTradeCount,
+                icons: ["YIELD_DIPLOMACY"]
+            },
+            "LOC_PROJECT_TOWN_TRADE_NAME": {
+                counter: getResourceCount,
+                icons: ["YIELD_HAPPINESS"]
+            }
+        }
+    };
+
+    // Helper functions (simplified and optimized)
     function getScaledFontSize(baseSize) {
-        const isHighRes = window.devicePixelRatio > 1 || window.innerWidth > 2560;
-        return isHighRes ? `${baseSize * HIGH_RES_SCALING}px` : `${baseSize}px`;
+        return `${baseSize * (window.devicePixelRatio > 1 || window.innerWidth > 2560 ? HIGH_RES_SCALING : 1)}px`;
     }
 
-    // Cache DOM queries
-    const iconTemplate = document.createElement('div');
-    iconTemplate.className = 'flex items-center';
-    
-    const infoTemplate = document.createElement('div');
-    infoTemplate.className = 'additional-info';
-    infoTemplate.style.cssText = `
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        padding: 8px;
-        border-radius: 5px;
-        margin-top: 5px;
-        text-align: left;
-        font-size: ${getScaledFontSize(FONT_SIZES.LARGE)};
-        max-width: 100%;
-        display: block;
-    `;
+    function clearResourceCache() {
+        state.resourceCache.clear();
+        state.lastCityID = null;
+    }
 
-    // Create a mapping for improvement type display names
-    const IMPROVEMENT_DISPLAY_NAMES = {
-        "IMPROVEMENT_WOODCUTTER": "LOC_MOD_ETFI_IMPROVEMENT_WOODCUTTER",
-        "IMPROVEMENT_WOODCUTTER_RESOURCE": "LOC_MOD_ETFI_IMPROVEMENT_WOODCUTTER",
-        "IMPROVEMENT_MINE": "LOC_MOD_ETFI_IMPROVEMENT_MINE",
-        "IMPROVEMENT_MINE_RESOURCE": "LOC_MOD_ETFI_IMPROVEMENT_MINE",
-        "IMPROVEMENT_FISHING_BOAT": "LOC_MOD_ETFI_IMPROVEMENT_FISHING_BOAT",
-        "IMPROVEMENT_FISHING_BOAT_RESOURCE": "LOC_MOD_ETFI_IMPROVEMENT_FISHING_BOAT",
-        "IMPROVEMENT_FARM": "LOC_MOD_ETFI_IMPROVEMENT_FARM",
-        "IMPROVEMENT_PASTURE": "LOC_MOD_ETFI_IMPROVEMENT_PASTURE",
-        "IMPROVEMENT_PLANTATION": "LOC_MOD_ETFI_IMPROVEMENT_PLANTATION",
-        "IMPROVEMENT_CAMP": "LOC_MOD_ETFI_IMPROVEMENT_CAMP",
-        "IMPROVEMENT_CLAY_PIT": "LOC_MOD_ETFI_IMPROVEMENT_CLAY_PIT",
-        "IMPROVEMENT_QUARRY": "LOC_MOD_ETFI_IMPROVEMENT_QUARRY"
-    };
+    function getResourceCount(cityID) {
+        if (!cityID) return { total: 0, details: {} };
 
-    // Keep all improvement types in the sets
-    const IMPROVEMENT_SETS = {
-        food: new Set([
-            "IMPROVEMENT_FARM", "IMPROVEMENT_PASTURE", "IMPROVEMENT_PLANTATION",
-            "IMPROVEMENT_FISHING_BOAT", "IMPROVEMENT_FISHING_BOAT_RESOURCE"
-        ]),
-        production: new Set([
-            "IMPROVEMENT_CAMP", "IMPROVEMENT_WOODCUTTER", "IMPROVEMENT_WOODCUTTER_RESOURCE",
-            "IMPROVEMENT_CLAY_PIT", "IMPROVEMENT_MINE", "IMPROVEMENT_MINE_RESOURCE", "IMPROVEMENT_QUARRY"
-        ])
-    };
+        const city = Cities.get(cityID);
+        if (!city) return { total: 0, details: {} };
 
-    // Optimize Set lookups
-    const TOOLTIP_IDS = new Set([
-        "LOC_PROJECT_TOWN_URBAN_CENTER_NAME",
-        "LOC_PROJECT_TOWN_GRANARY_NAME",
-        "LOC_PROJECT_TOWN_FISHING_NAME",
-        "LOC_PROJECT_TOWN_PRODUCTION_NAME",
-        "LOC_PROJECT_TOWN_INN_NAME",
-        "LOC_PROJECT_TOWN_TRADE_NAME"
-    ]);
+        // Check if we have cached data for this city
+        const cacheKey = `${city.id.owner}-${city.id.id}`;
+        if (state.resourceCache.has(cacheKey)) {
+            return state.resourceCache.get(cacheKey);
+        }
 
-	function getImprovementCount(cityID, targetImprovements) {
+        const resources = new Map(); // Map to store resource counts by type
+
+        // Get city location and purchased plots
+        const cityLocation = city.location;
+        const purchasedPlotIndices = city.getPurchasedPlots();
+
+        if (!cityLocation) return { total: 0, details: {} };
+
+        // Start with the city center plot
+        const plots = [cityLocation];
+        
+        // Convert purchased plot indices to coordinates and add them
+        if (purchasedPlotIndices?.length) {
+            for (const plotIndex of purchasedPlotIndices) {
+                const plotCoords = GameplayMap.getLocationFromIndex(plotIndex);
+                if (plotCoords) {
+                    plots.push(plotCoords);
+                }
+            }
+        }
+
+        // Check each plot for resources
+        for (const plot of plots) {
+            if (!plot.x || !plot.y) continue;
+
+            const resourceType = GameplayMap.getResourceType(plot.x, plot.y);
+            if (resourceType === ResourceTypes.NO_RESOURCE) continue;
+
+            const resourceInfo = GameInfo.Resources.lookup(resourceType);
+            if (!resourceInfo) continue;
+
+            const resourceName = Locale.compose(resourceInfo.Name);
+            const iconId = resourceInfo.ResourceType; // Get the resource type as icon ID
+            resources.set(resourceName, {
+                count: (resources.get(resourceName)?.count || 0) + 1,
+                iconId
+            });
+        }
+
+        const total = Array.from(resources.values()).reduce((sum, data) => sum + data.count, 0);
+        const happiness = total * 2; // Each resource provides +2 happiness
+
+        const result = {
+            total: happiness,
+            details: {
+                resources: Array.from(resources.entries()).map(([name, data]) => ({
+                    name,
+                    count: data.count,
+                    iconId: data.iconId
+                })),
+                resourceCount: total
+            }
+        };
+
+        // Cache the result
+        state.resourceCache.set(cacheKey, result);
+
+        return result;
+    }
+
+    function getImprovementCount(cityID, targetImprovements) {
         if (!cityID) return { total: 0, details: {} };
 
         const city = Cities.get(cityID);
@@ -114,12 +223,12 @@
         const targetSet = new Set(targetImprovements);
 
         for (const instanceId of improvements) {
-	        const instance = Constructibles.get(instanceId);
-	        if (!instance) continue;
+            const instance = Constructibles.get(instanceId);
+            if (!instance) continue;
 
-	        const info = GameInfo.Constructibles.lookup(instance.type);
+            const info = GameInfo.Constructibles.lookup(instance.type);
             if (info && targetSet.has(info.ConstructibleType)) {
-                const displayName = Locale.compose(IMPROVEMENT_DISPLAY_NAMES[info.ConstructibleType] || info.ConstructibleType);
+                const displayName = Locale.compose(IMPROVEMENTS.displayNames[info.ConstructibleType] || info.ConstructibleType);
                 detailedCounts[displayName] = (detailedCounts[displayName] || 0) + 1;
             }
         }
@@ -127,13 +236,13 @@
         let total = Object.values(detailedCounts).reduce((sum, count) => sum + count, 0);
 
         // Multiply based on era
-	    const ageData = GameInfo.Ages.lookup(Game.age);
+        const ageData = GameInfo.Ages.lookup(Game.age);
         let multiplier = 1;
         if (ageData) {
-		    const currentAge = ageData.AgeType?.trim();
-		    if (currentAge === "AGE_EXPLORATION") {
+            const currentAge = ageData.AgeType?.trim();
+            if (currentAge === "AGE_EXPLORATION") {
                 multiplier = 2;
-		    } else if (currentAge === "AGE_MODERN") {
+            } else if (currentAge === "AGE_MODERN") {
                 multiplier = 3;
             }
         }
@@ -143,7 +252,7 @@
             details: detailedCounts,
             multiplier
         };
-	}
+    }
 
     function getBuildingCount(cityID) {
         if (!cityID) return { total: 0, details: {} };
@@ -256,110 +365,6 @@
         };
     }
 
-    function clearResourceCache() {
-        resourceCache.clear();
-        lastCityID = null;
-    }
-
-    function getResourceCount(cityID) {
-        if (!cityID) return { total: 0, details: {} };
-
-        const city = Cities.get(cityID);
-        if (!city) return { total: 0, details: {} };
-
-        // Check if we have cached data for this city
-        const cacheKey = `${city.id.owner}-${city.id.id}`;
-        if (resourceCache.has(cacheKey)) {
-            return resourceCache.get(cacheKey);
-        }
-
-        const resources = new Map(); // Map to store resource counts by type
-
-        // Get city location and purchased plots
-        const cityLocation = city.location;
-        const purchasedPlotIndices = city.getPurchasedPlots();
-
-        if (!cityLocation) return { total: 0, details: {} };
-
-        // Start with the city center plot
-        const plots = [cityLocation];
-        
-        // Convert purchased plot indices to coordinates and add them
-        if (purchasedPlotIndices?.length) {
-            for (const plotIndex of purchasedPlotIndices) {
-                const plotCoords = GameplayMap.getLocationFromIndex(plotIndex);
-                if (plotCoords) {
-                    plots.push(plotCoords);
-                }
-            }
-        }
-
-        // Check each plot for resources
-        for (const plot of plots) {
-            if (!plot.x || !plot.y) continue;
-
-            const resourceType = GameplayMap.getResourceType(plot.x, plot.y);
-            if (resourceType === ResourceTypes.NO_RESOURCE) continue;
-
-            const resourceInfo = GameInfo.Resources.lookup(resourceType);
-            if (!resourceInfo) continue;
-
-            const resourceName = Locale.compose(resourceInfo.Name);
-            const iconId = resourceInfo.ResourceType; // Get the resource type as icon ID
-            resources.set(resourceName, {
-                count: (resources.get(resourceName)?.count || 0) + 1,
-                iconId
-            });
-        }
-
-        const total = Array.from(resources.values()).reduce((sum, data) => sum + data.count, 0);
-        const happiness = total * 2; // Each resource provides +2 happiness
-
-        const result = {
-            total: happiness,
-            details: {
-                resources: Array.from(resources.entries()).map(([name, data]) => ({
-                    name,
-                    count: data.count,
-                    iconId: data.iconId
-                })),
-                resourceCount: total
-            }
-        };
-
-        // Cache the result
-        resourceCache.set(cacheKey, result);
-
-        return result;
-    }
-
-    const TOOLTIP_CONFIGS = {
-        "LOC_PROJECT_TOWN_URBAN_CENTER_NAME": {
-            counter: getBuildingCount,
-            icons: ["YIELD_SCIENCE", "YIELD_CULTURE"]
-        },
-        "LOC_PROJECT_TOWN_GRANARY_NAME": {
-            counter: (cityID) => getImprovementCount(cityID, Array.from(IMPROVEMENT_SETS.food)),
-            icons: ["YIELD_FOOD"]
-        },
-        "LOC_PROJECT_TOWN_FISHING_NAME": {
-            counter: (cityID) => getImprovementCount(cityID, Array.from(IMPROVEMENT_SETS.food)),
-            icons: ["YIELD_FOOD"]
-        },
-        "LOC_PROJECT_TOWN_PRODUCTION_NAME": {
-            counter: (cityID) => getImprovementCount(cityID, Array.from(IMPROVEMENT_SETS.production)),
-            icons: ["YIELD_PRODUCTION"]
-        },
-        "LOC_PROJECT_TOWN_INN_NAME": {
-            counter: getTradeCount,
-            icons: ["YIELD_DIPLOMACY"]
-        },
-        "LOC_PROJECT_TOWN_TRADE_NAME": {
-            counter: getResourceCount,
-            icons: ["YIELD_HAPPINESS"]
-        }
-    };
-
     function clearTooltipContent(tooltip) {
         if (!tooltip) return;
         const tooltipContent = tooltip.querySelector('.tooltip__content');
@@ -369,19 +374,19 @@
     }
 
     function observeTooltipContent(tooltip) {
-        if (contentObserver) {
-            contentObserver.disconnect();
+        if (state.contentObserver) {
+            state.contentObserver.disconnect();
         }
 
         const tooltipContent = tooltip.querySelector('.tooltip__content');
         if (!tooltipContent) return;
 
-        contentObserver = new MutationObserver(() => {
+        state.contentObserver = new MutationObserver(() => {
             // Force immediate recalculation when content changes
             requestAnimationFrame(() => modifyTooltip(tooltip));
         });
 
-        contentObserver.observe(tooltipContent, {
+        state.contentObserver.observe(tooltipContent, {
             childList: true,
             subtree: true,
             characterData: true,
@@ -389,11 +394,11 @@
         });
     }
 
-	function modifyTooltip(tooltip) {
-        if (lastTooltip) {
-            clearTooltipContent(lastTooltip);
+    function modifyTooltip(tooltip) {
+        if (state.lastTooltip) {
+            clearTooltipContent(state.lastTooltip);
         }
-        lastTooltip = tooltip;
+        state.lastTooltip = tooltip;
 
         const cityID = getCityID();
         if (!cityID) {
@@ -405,13 +410,13 @@
         const l10nId = tooltip.querySelector("[data-l10n-id]")?.getAttribute("data-l10n-id");
         log('Tooltip ID:', l10nId);
 
-        if (!TOOLTIP_IDS.has(l10nId)) {
+        if (!TOOLTIPS.ids.has(l10nId)) {
             log('Tooltip ID not in tracked set:', l10nId);
             clearTooltipContent(tooltip);
             return;
         }
         
-        const config = TOOLTIP_CONFIGS[l10nId];
+        const config = TOOLTIPS.configs[l10nId];
         log('Found config for tooltip:', l10nId);
 
         const tooltipContent = tooltip.querySelector('.tooltip__content');
@@ -628,20 +633,20 @@
         const tooltipContainer = document.querySelector('.tooltip-container') || document.body;
         log('Found tooltip container:', tooltipContainer ? 'yes' : 'no');
         
-        if (tooltipObserver) {
-            tooltipObserver.disconnect();
+        if (state.tooltipObserver) {
+            state.tooltipObserver.disconnect();
         }
-        if (contentObserver) {
-            contentObserver.disconnect();
+        if (state.contentObserver) {
+            state.contentObserver.disconnect();
         }
 
-        tooltipObserver = new MutationObserver((mutationsList) => {
+        state.tooltipObserver = new MutationObserver((mutationsList) => {
             for (const mutation of mutationsList) {
                 for (const node of mutation.removedNodes) {
                     if (node.nodeName === 'FXS-TOOLTIP') {
                         clearTooltipContent(node);
-                        if (lastTooltip === node) {
-                            lastTooltip = null;
+                        if (state.lastTooltip === node) {
+                            state.lastTooltip = null;
                             clearResourceCache(); // Clear cache when tooltip is removed
                         }
                     }
@@ -660,7 +665,7 @@
             }
         });
 
-        tooltipObserver.observe(tooltipContainer, { 
+        state.tooltipObserver.observe(tooltipContainer, { 
             childList: true, 
             subtree: true
         });
