@@ -1,4 +1,30 @@
-# Enhanced Town Focus Info Mod for Civilization VII
+# Enhanced Town Focus Info
+
+A mod for Civilization VII that enhances the display of town focus yield bonuses, showing detailed breakdowns of improvements, buildings, and trade routes that contribute to specialization bonuses.
+
+## Version 1.1.6
+
+### What's New
+- Added Russian language support (Thanks to Webrok for the translations!)
+
+### Features
+- Detailed breakdown of specialization bonuses
+- Support for multiple languages (English, Japanese, Italian, Russian)
+- Visual improvements and detailed tooltips
+- Era bonus multiplier display
+- Resource and happiness calculations
+- Trade route connection details
+
+### Languages
+- English
+- Japanese
+- Italian
+- Russian (New!)
+
+### Credits
+- Original work by Yamada
+- Maintained by Mallek
+- Russian translations by Webrok
 
 ## Overview
 Enhanced Town Focus Info is a quality-of-life mod for Civilization VII that provides detailed breakdowns of yield bonuses when selecting town specializations. This mod enhances the tooltip display to show exactly how many buildings, improvements, and trade routes contribute to each specialization's bonuses.
@@ -114,6 +140,10 @@ Current language support:
 This project is licensed under the MIT License - see the LICENSE file for details
 
 ## Version History
+- 1.1.6: Russian Localization Update
+  - Added Russian language support (thanks to Webrok!)
+  - Updated documentation
+  - Minor code improvements
 - 1.1.5: Italian Localization Update
   - Added Italian language support (thanks to RockFactory!)
   - Fixed semicolon issues in localization file

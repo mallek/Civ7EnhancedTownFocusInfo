@@ -17,6 +17,7 @@
 		<File>text/en_us/ModuleText.xml</File>
 		<File>text/ja_JP/ModuleText.xml</File>
 		<File>text/it_IT/ModuleText.xml</File>
+		<File>text/ru_RU/ModuleText.xml</File>
 	</Files>
 	<ActionCriteria>
 		<Criteria id="always">
@@ -39,5 +40,6 @@
 		<File>text/en_us/ModuleText.xml</File>
 		<File>text/ja_JP/ModuleText.xml</File>
 		<File>text/it_IT/ModuleText.xml</File>
+		<File>text/ru_RU/ModuleText.xml</File>
 	</LocalizedText>
 </Mod> 

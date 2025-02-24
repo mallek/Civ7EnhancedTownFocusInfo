@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Database>
+  <LocalizedText>
+    <Replace Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO" Language="ru_RU">
+      <Text>Enhanced Town Focus Info</Text>
+    </Replace>
+    <Replace Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION" Language="ru_RU">
+      <Text>Улучшенное отображение бонусов к доходу с городков при его специализации, с разбивкой по улучшениям, ресурсам, зданиям и торговым путям.</Text>
+    </Replace>
+  </LocalizedText>
+</Database> 
