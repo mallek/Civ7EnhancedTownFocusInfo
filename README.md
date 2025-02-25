@@ -2,14 +2,18 @@
 
 A mod for Civilization VII that enhances the display of town focus yield bonuses, showing detailed breakdowns of improvements, buildings, and trade routes that contribute to specialization bonuses.
 
-## Version 1.1.6
+## Version 1.1.7
 
 ### What's New
-- Added Russian language support (Thanks to Webrok for the translations!)
+- Added Polish language support (Thanks to Klajwert for the translations!)
+- Enhanced Urban Center calculation logic with proper quarter detection
+- Added support for unique civilization-specific quarters
+- Improved support for current-age and full-tile building quarters
+- Enhanced tooltip display with better localization support
 
 ### Features
 - Detailed breakdown of specialization bonuses
-- Support for multiple languages (English, Japanese, Italian, Russian)
+- Support for multiple languages (English, Japanese, Italian, Russian, Polish)
 - Visual improvements and detailed tooltips
 - Era bonus multiplier display
 - Resource and happiness calculations
@@ -19,23 +23,26 @@ A mod for Civilization VII that enhances the display of town focus yield bonuses
 - English
 - Japanese
 - Italian
-- Russian (New!)
+- Russian
+- Polish (New!)
 
 ### Credits
 - Original work by Yamada
 - Maintained by Mallek
 - Russian translations by Webrok
+- Polish translations by Klajwert
+- Special thanks to fulfom for reporting and helping fix the Urban Center quarters bug
 
 ## Overview
 Enhanced Town Focus Info is a quality-of-life mod for Civilization VII that provides detailed breakdowns of yield bonuses when selecting town specializations. This mod enhances the tooltip display to show exactly how many buildings, improvements, and trade routes contribute to each specialization's bonuses.
-
-*Based on the original Town Focus Boost Info mod by Yamada, enhanced and maintained by Mallek*
 
 ## Features
 
 ### Urban Center Focus
 Shows detailed breakdown of Science and Culture bonuses from:
 - Special Quarters (like Rail Stations)
+- Unique Civilization Quarters
+- Full-Tile Quarters
 - Building Quarters (stacked buildings)
 - Individual contribution of each quarter
 
@@ -94,7 +101,7 @@ The mod will be available on the Official Civilization VII Mod Browser once mod 
 
 Note: The full path should look like:
 ```
-C:\Users\[YourUsername]\AppData\Local\Firaxis Games\Sid Meier's Civilization VII\Mods\EnhancedTownFocusInfo
+C:\Users\[YourUsername]\AppData\Local\Firaxis Games\Sid Meier's Civilization VII\Mods\Civ7EnhancedTownFocusInfo
 ```
 
 ## Compatibility
@@ -113,7 +120,7 @@ Feel free to contribute to this project by:
 - Helping with translations (see Localization section below)
 
 ## Localization
-The mod now supports multiple languages! All text strings are stored in localization files under the `modules/text` directory.
+The mod supports multiple languages! All text strings are stored in localization files under the `modules/text` directory.
 
 To contribute a new translation:
 
@@ -128,18 +135,27 @@ Current language support:
 - English (en_US)
 - Japanese (ja_JP)
 - Italian (it_IT)
-- *More coming soon with community help!*
+- Russian (ru_RU)
+- Polish (pl_PL)
 
 ## Credits
 - Original mod concept by Yamada
 - Enhanced and maintained by Mallek
 - Italian translation by RockFactory
+- Russian translation by Webrok
+- Polish translation by Klajwert
 - Thanks to the Civilization VII modding community
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details
 
 ## Version History
+- 1.1.7: Polish Localization and Urban Center Update
+  - Added Polish language support (thanks to Klajwert!)
+  - Enhanced Urban Center calculation logic (thanks to fulfom for reporting the issue and solution!)
+  - Added support for unique civilization-specific quarters
+  - Improved support for current-age and full-tile building quarters
+  - Enhanced tooltip display with better localization
 - 1.1.6: Russian Localization Update
   - Added Russian language support (thanks to Webrok!)
   - Updated documentation

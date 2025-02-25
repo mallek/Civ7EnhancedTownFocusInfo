@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Database>
+	<LocalizedText>
+		<Row Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO" Language="pl_PL">
+			<Text>Rozszerzone Informacje o Miasteczkach</Text>
+		</Row>
+		<Row Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION" Language="pl_PL">
+			<Text>Przedstawia szczegółowe zestawienie ulepszeń, budynków, szlaków handlowych i połączeń między osiedlami, które zwiększają premie za specjalizację miasteczek. Autor: Mallek (Bazowano na pracy użytkownika Yamada)</Text>
+		</Row>
+	</LocalizedText>
+</Database>

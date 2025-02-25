@@ -1,20 +1,29 @@
+/**
+ * Enhanced Town Focus Info Mod - Makes Town Focus Tooltips more informative
+ * Author: Mallek
+ * Version: 1.1.7
+ */
+
+// Set to false for production, true for debugging
+const DEV_MODE = false;
+
 (function() {
     // Development constants
-    const VERSION = "1.1.6";
-    const DEV_MODE = false;
+    const VERSION = "1.1.7";
 
     // Add safe logging function
     function log(...args) {
         if (!DEV_MODE) return;
         try {
-            console.error(`[ETFI Debug] ${args.map(arg => 
+            console.error(`[ETFI v${VERSION}] ${args.map(arg => 
                 typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
             ).join(' ')}`);
         } catch (e) {}
     }
 
-    // Constants
+    // Configure constants
     const HIGH_RES_SCALING = 1.75;
+    
     const FONT_SIZES = {
         LARGE: 18,
         MEDIUM: 16,
@@ -41,11 +50,26 @@
         `
     });
 
-    // Optimization: Pre-compile localization keys
+    // Localization constants
     const L10N = {
         ERA_BONUS: Locale.compose("LOC_MOD_ETFI_ERA_BONUS"),
         TOTAL_RESOURCES: Locale.compose("LOC_MOD_ETFI_TOTAL_RESOURCES"),
         HAPPINESS_PER_RESOURCE: Locale.compose("LOC_MOD_ETFI_HAPPINESS_PER_RESOURCE"),
+        SPECIAL_QUARTERS: Locale.compose("LOC_MOD_ETFI_SPECIAL_QUARTERS"),
+        UNIQUE_QUARTERS: Locale.compose("LOC_MOD_ETFI_UNIQUE_QUARTERS"),
+        FULL_TILE_QUARTERS: Locale.compose("LOC_MOD_ETFI_FULL_TILE_QUARTERS"),
+        BUILDING_QUARTERS: Locale.compose("LOC_MOD_ETFI_BUILDING_QUARTERS"),
+        IMPROVEMENTS: {
+            WOODCUTTER: 'LOC_MOD_ETFI_IMPROVEMENT_WOODCUTTER',
+            MINE: 'LOC_MOD_ETFI_IMPROVEMENT_MINE',
+            FISHING_BOAT: 'LOC_MOD_ETFI_IMPROVEMENT_FISHING_BOAT',
+            FARM: 'LOC_MOD_ETFI_IMPROVEMENT_FARM',
+            PASTURE: 'LOC_MOD_ETFI_IMPROVEMENT_PASTURE',
+            PLANTATION: 'LOC_MOD_ETFI_IMPROVEMENT_PLANTATION',
+            CAMP: 'LOC_MOD_ETFI_IMPROVEMENT_CAMP',
+            CLAY_PIT: 'LOC_MOD_ETFI_IMPROVEMENT_CLAY_PIT',
+            QUARRY: 'LOC_MOD_ETFI_IMPROVEMENT_QUARRY'
+        }
     };
 
     // State management
@@ -261,10 +285,25 @@
         if (!city?.Constructibles) return { total: 0, details: {} };
 
         const SPECIAL_BUILDINGS = new Set(["BUILDING_RAIL_STATION"]);
-        const tileStacks = new Map();  // Map of tile coordinates to array of buildings
-        const quarters = [];  // Store all quarters (special and stacked)
-
-        // First pass: collect all buildings by tile
+        const iCurrentAge = Game.age;
+        const quarters = [];  // Store all quarters
+        
+        // Apply era-based multiplier (same as other town focus types)
+        const ageData = GameInfo.Ages.lookup(Game.age);
+        let multiplier = 1;
+        if (ageData) {
+            const currentAge = ageData.AgeType?.trim();
+            if (currentAge === "AGE_EXPLORATION") {
+                multiplier = 2;
+            } else if (currentAge === "AGE_MODERN") {
+                multiplier = 3;
+            }
+        }
+        
+        // Collect all buildings
+        const buildings = [];
+        const buildingsByTile = new Map(); // Map of tile coordinates to array of buildings
+        
         for (const instanceId of city.Constructibles.getIdsOfClass("BUILDING")) {
             const instance = Constructibles.get(instanceId);
             if (!instance?.location) continue;
@@ -272,42 +311,152 @@
             const buildingInfo = GameInfo.Constructibles.lookup(instance.type);
             if (!buildingInfo) continue;
 
-            const buildingType = buildingInfo.ConstructibleType;
-            if (!buildingType) continue;
-
-            if (SPECIAL_BUILDINGS.has(buildingType)) {
-                // Add special buildings as quarters
+            // Special buildings are always quarters
+            if (SPECIAL_BUILDINGS.has(buildingInfo.ConstructibleType)) {
                 quarters.push({
                     isSpecial: true,
-                    buildings: [buildingInfo.Name], // Use the Name field from GameInfo
+                    buildings: [buildingInfo.Name],
                     contribution: 1
                 });
-            } else {
-                const key = `${instance.location.x},${instance.location.y}`;
-                if (!tileStacks.has(key)) {
-                    tileStacks.set(key, []);
-                }
-                tileStacks.get(key).push(buildingInfo.Name); // Store the Name instead of ConstructibleType
+                continue;
+            }
+            
+            // Get the key for this location
+            const key = `${instance.location.x},${instance.location.y}`;
+            
+            // Store building in location map
+            if (!buildingsByTile.has(key)) {
+                buildingsByTile.set(key, []);
+            }
+            
+            // Create a building object with important properties
+            const building = {
+                Info: buildingInfo,
+                Name: buildingInfo.Name,
+                Ageless: GameInfo.TypeTags.find(e => e.Tag == "AGELESS" && e.Type == buildingInfo.ConstructibleType),
+                UniqueTrait: GameInfo.Buildings.find(e => e.ConstructibleType == buildingInfo.ConstructibleType && e.TraitType !== null),
+                ConstructibleAge: Database.makeHash(buildingInfo?.Age ?? ""),
+                Completed: instance.complete,
+                FullTile: GameInfo.TypeTags.find(e => e.Tag == "FULL_TILE" && e.Type == buildingInfo.ConstructibleType)
+            };
+            
+            // Only include completed buildings
+            if (building.Completed) {
+                buildings.push(building);
+                buildingsByTile.get(key).push(building);
             }
         }
+        
+        log('Buildings found:', buildings.length);
 
-        // Process tile stacks
-        tileStacks.forEach((buildings) => {
-            if (buildings.length >= 2) {
+        // Check each tile for quarters - examining stacked buildings
+        buildingsByTile.forEach((tileBuildingStack, tileKey) => {
+            // Skip if we don't have enough buildings
+            if (tileBuildingStack.length < 1) return;
+            
+            // TCS Quarter detection logic
+            const uniques = [];
+            const ages = [];
+            
+            // Collect traits and ages
+            tileBuildingStack.forEach((building) => {
+                if (building.UniqueTrait) {
+                    uniques.push(building.UniqueTrait.TraitType);
+                }
+                
+                if ((building.ConstructibleAge || building.Ageless)) {
+                    if (building.Ageless) {
+                        ages.push(iCurrentAge);
+                    } else {
+                        ages.push(building.ConstructibleAge);
+                    }
+                }
+            });
+            
+            // Check for unique civilization quarter
+            if (uniques.length > 1) {
+                const uniquesSet = new Set(uniques);
+                if (uniquesSet.size == 1) {
+                    log('Found unique quarter from civilization trait:', Array.from(uniquesSet)[0]);
+                    const uniqueQuarter = GameInfo.UniqueQuarters.find(e => e.TraitType == uniques[0]);
+                    if (uniqueQuarter) {
+                        const civType = GameInfo.LegacyCivilizationTraits.find(e => e.TraitType == uniques[0]);
+                        if (civType) {
+                            const civLegacy = GameInfo.LegacyCivilizations.find(e => e.CivilizationType == civType.CivilizationType);
+                            if (civLegacy) {
+                                quarters.push({
+                                    isSpecial: true,
+                                    isUnique: true,
+                                    buildings: tileBuildingStack.map(b => b.Name),
+                                    civName: civLegacy.Adjective,
+                                    quarterName: uniqueQuarter.Name,
+                                    contribution: 1
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            // Check for current-age quarter (2+ buildings)
+            else if (ages.length > 1) {
+                const agesSet = new Set(ages);
+                if (agesSet.size == 1 && ages[0] == iCurrentAge) {
+                    log('Found standard quarter with multiple buildings from current age');
+                    quarters.push({
+                        isSpecial: false,
+                        buildings: tileBuildingStack.map(b => b.Name),
+                        contribution: 1
+                    });
+                }
+            }
+            // Check for full-tile building quarter
+            else if (tileBuildingStack.length == 1 && tileBuildingStack[0].FullTile) {
+                const building = tileBuildingStack[0];
+                // Only count as a quarter if it's from the current age or ageless
+                if (building.Ageless || building.ConstructibleAge == iCurrentAge) {
+                    log('Found full-tile building quarter:', Locale.compose(building.Name));
+                    quarters.push({
+                        isSpecial: false,
+                        isFullTile: true,
+                        buildings: [building.Name],
+                        contribution: 1
+                    });
+                }
+            }
+            // Default stack detection (2+ buildings)
+            else if (tileBuildingStack.length >= 2) {
+                log('Found default building stack with', tileBuildingStack.length, 'buildings');
                 quarters.push({
                     isSpecial: false,
-                    buildings: buildings, // Names are already localization keys
+                    buildings: tileBuildingStack.map(b => b.Name),
                     contribution: 1
                 });
             }
         });
 
-        const total = quarters.length;
+        // Calculate final bonus - just quarters times multiplier
+        const quartersCount = quarters.length;
+        const totalBonus = quartersCount * multiplier;
+        
+        log('Quarters found:', quartersCount);
+        log('Era multiplier:', multiplier);
+        log('Total calculated bonus:', totalBonus);
 
         return { 
-            total, 
+            total: totalBonus, 
             details: {
-                quarters: quarters.sort((a, b) => b.isSpecial - a.isSpecial)  // Special buildings first
+                quarterCount: quartersCount,
+                multiplier: multiplier,
+                quarters: quarters.sort((a, b) => {
+                    // Sort order: Unique quarters > Special quarters > Full-tile > Regular stacks
+                    if (a.isUnique && !b.isUnique) return -1;
+                    if (!a.isUnique && b.isUnique) return 1;
+                    if (a.isSpecial && !b.isSpecial) return -1;
+                    if (!a.isSpecial && b.isSpecial) return 1;
+                    if (a.isFullTile && !b.isFullTile) return -1;
+                    if (!a.isFullTile && b.isFullTile) return 1;
+                    return 0;
+                })
             }
         };
     }
@@ -469,6 +618,31 @@
                 <strong>+${totalCount.total}</strong>
             `;
             totalDiv.appendChild(iconDiv);
+        } else if (l10nId === "LOC_PROJECT_TOWN_URBAN_CENTER_NAME") {
+            // Special handling for Urban Center to show calculated total with base bonus and era multiplier
+            config.icons.forEach(iconId => {
+                const iconDiv = iconTemplate.cloneNode(true);
+                iconDiv.innerHTML = `
+                    <fxs-icon data-icon-id="${iconId}" class="size-6 mr-1"></fxs-icon>
+                    <strong>+${totalCount.total}</strong>
+                `;
+                totalDiv.appendChild(iconDiv);
+            });
+            
+            // If we need to update the yield values in the main tooltip UI, we could do it here:
+            // Find and update the bonus values in the original tooltip display
+            setTimeout(() => {
+                const yieldItems = tooltip.querySelectorAll('.yield-item .text');
+                if (yieldItems && yieldItems.length > 0) {
+                    for (let i = 0; i < yieldItems.length; i++) {
+                        const yieldItem = yieldItems[i];
+                        if (yieldItem) {
+                            yieldItem.textContent = `+${totalCount.total}`;
+                        }
+                    }
+                }
+            }, 0);
+            
         } else {
             // Regular handling for other focus types
             config.icons.forEach(iconId => {
@@ -519,18 +693,67 @@
                     </div>
                 `;
             } else if (totalCount.details.quarters !== undefined) {
+                // Urban Center calculation breakdown
+                
                 // Group quarters by type
-                const specialQuarters = totalCount.details.quarters.filter(q => q.isSpecial);
-                const buildingQuarters = totalCount.details.quarters.filter(q => !q.isSpecial);
+                const uniqueQuarters = totalCount.details.quarters.filter(q => q.isUnique);
+                const specialQuarters = totalCount.details.quarters.filter(q => q.isSpecial && !q.isUnique);
+                const fullTileQuarters = totalCount.details.quarters.filter(q => q.isFullTile);
+                const buildingQuarters = totalCount.details.quarters.filter(q => !q.isSpecial && !q.isFullTile);
 
                 let content = '';
+
+                // Show unique quarters if any exist
+                if (uniqueQuarters.length > 0) {
+                    content += `
+                        <div style="margin-bottom: 8px;">
+                            <div style="color: #fff; margin-bottom: 4px;">${L10N.UNIQUE_QUARTERS}:</div>
+                            ${uniqueQuarters.map(quarter => {
+                                const quarterName = quarter.quarterName ? Locale.compose(quarter.quarterName) : "Unique Quarter";
+                                const civName = quarter.civName ? Locale.compose(quarter.civName) : "";
+                                return `
+                                    <div style="padding-left: 8px;">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span>${quarterName} ${civName ? `(${civName})` : ''}</span>
+                                            <span style="color: #fff;">+1</span>
+                                        </div>
+                                        <div style="padding-left: 8px; font-size: ${getScaledFontSize(FONT_SIZES.SMALL)}; color: #aaa;">
+                                            ${quarter.buildings.map(b => Locale.compose(b)).join(' + ')}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
 
                 // Show special quarters if any exist
                 if (specialQuarters.length > 0) {
                     content += `
                         <div style="margin-bottom: 8px;">
-                            <div style="color: #fff; margin-bottom: 4px;">${Locale.compose("LOC_MOD_ETFI_SPECIAL_QUARTERS")}:</div>
+                            <div style="color: #fff; margin-bottom: 4px;">${L10N.SPECIAL_QUARTERS}:</div>
                             ${specialQuarters.map(quarter => {
+                                // Get localized building name
+                                const buildingName = Locale.compose(quarter.buildings[0]);
+                                return `
+                                    <div style="padding-left: 8px;">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span>${buildingName}</span>
+                                            <span style="color: #fff;">+1</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+
+                // Show full-tile quarters if any exist
+                if (fullTileQuarters.length > 0) {
+                    content += `
+                        <div style="margin-bottom: 8px;">
+                            <div style="color: #fff; margin-bottom: 4px;">${L10N.FULL_TILE_QUARTERS}:</div>
+                            ${fullTileQuarters.map(quarter => {
                                 // Get localized building name
                                 const buildingName = Locale.compose(quarter.buildings[0]);
                                 return `
@@ -549,8 +772,8 @@
                 // Show building quarters if any exist
                 if (buildingQuarters.length > 0) {
                     content += `
-                        <div style="margin-top: ${specialQuarters.length ? '8px' : '0'};">
-                            <div style="color: #fff; margin-bottom: 4px; font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)};">${Locale.compose("LOC_MOD_ETFI_BUILDING_QUARTERS")}:</div>
+                        <div style="margin-top: ${uniqueQuarters.length || specialQuarters.length || fullTileQuarters.length ? '8px' : '0'};">
+                            <div style="color: #fff; margin-bottom: 4px; font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)};">${L10N.BUILDING_QUARTERS}:</div>
                             ${buildingQuarters.map(quarter => {
                                 // Get localized building names
                                 const buildingNames = quarter.buildings.map(b => Locale.compose(b));
@@ -565,6 +788,16 @@
                                     </div>
                                 `;
                             }).join('')}
+                        </div>
+                    `;
+                }
+
+                // Add era multiplier at the bottom
+                if (totalCount.details.multiplier > 1) {
+                    content += `
+                        <div style="display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span>${L10N.ERA_BONUS}</span>
+                            <span style="color: #fff;">x${totalCount.details.multiplier}</span>
                         </div>
                     `;
                 }
