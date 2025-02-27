@@ -2,9 +2,10 @@
 
 A mod for Civilization VII that enhances the display of town focus yield bonuses, showing detailed breakdowns of improvements, buildings, and trade routes that contribute to specialization bonuses.
 
-## Version 1.1.7
+## Version 1.1.8
 
 ### What's New
+- Added Simplified Chinese language support (Thanks to thendye for the translations!)
 - Added Polish language support (Thanks to Klajwert for the translations!)
 - Enhanced Urban Center calculation logic with proper quarter detection
 - Added support for unique civilization-specific quarters
@@ -13,7 +14,7 @@ A mod for Civilization VII that enhances the display of town focus yield bonuses
 
 ### Features
 - Detailed breakdown of specialization bonuses
-- Support for multiple languages (English, Japanese, Italian, Russian, Polish)
+- Support for multiple languages (English, Japanese, Italian, Russian, Polish, Simplified Chinese)
 - Visual improvements and detailed tooltips
 - Era bonus multiplier display
 - Resource and happiness calculations
@@ -24,13 +25,15 @@ A mod for Civilization VII that enhances the display of town focus yield bonuses
 - Japanese
 - Italian
 - Russian
-- Polish (New!)
+- Polish
+- Simplified Chinese (New!)
 
 ### Credits
 - Original work by Yamada
 - Maintained by Mallek
 - Russian translations by Webrok
 - Polish translations by Klajwert
+- Simplified Chinese translations by thendye
 - Special thanks to fulfom for reporting and helping fix the Urban Center quarters bug
 
 ## Overview
@@ -137,6 +140,7 @@ Current language support:
 - Italian (it_IT)
 - Russian (ru_RU)
 - Polish (pl_PL)
+- Simplified Chinese (zh_Hans_CN)
 
 ## Credits
 - Original mod concept by Yamada
@@ -144,12 +148,17 @@ Current language support:
 - Italian translation by RockFactory
 - Russian translation by Webrok
 - Polish translation by Klajwert
+- Simplified Chinese translation by thendye
 - Thanks to the Civilization VII modding community
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details
 
 ## Version History
+- 1.1.8: Chinese Localization Update
+  - Added Simplified Chinese language support (thanks to thendye!)
+  - Updated documentation
+  - Minor code improvements
 - 1.1.7: Polish Localization and Urban Center Update
   - Added Polish language support (thanks to Klajwert!)
   - Enhanced Urban Center calculation logic (thanks to fulfom for reporting the issue and solution!)

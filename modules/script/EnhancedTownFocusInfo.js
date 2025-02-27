@@ -1,7 +1,7 @@
 /**
  * Enhanced Town Focus Info Mod - Makes Town Focus Tooltips more informative
  * Author: Mallek
- * Version: 1.1.7
+ * Version: 1.1.8
  */
 
 // Set to false for production, true for debugging
@@ -9,7 +9,7 @@ const DEV_MODE = false;
 
 (function() {
     // Development constants
-    const VERSION = "1.1.7";
+    const VERSION = "1.1.8";
 
     // Add safe logging function
     function log(...args) {
