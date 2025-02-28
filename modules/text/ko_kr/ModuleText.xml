@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Database>
+  <LocalizedText>
+    <Replace Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO" Language="ko_KR">
+      <Text>Enhanced Town Focus Info (향상된 마을 전문화)</Text>
+    </Replace>
+    <Replace Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION" Language="ko_KR">
+      <Text>마을 전문화를 선택할 때 시설, 건물 및 교역로에서 자세한 보너스를 분석해 보여줍니다.</Text>
+    </Replace>
+  </LocalizedText>
+</Database> 
