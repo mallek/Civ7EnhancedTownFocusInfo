@@ -1,0 +1,1000 @@
+<?xml version="1.0"?>
+<PanelData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>Enhanced Town Focus Info</Name>
+  <App>Civ7</App>
+  <EnterAction>if (typeof g_TunerState == 'undefined') {
+	g_TunerState = {};
+}
+if (g_TunerState.EnhancedTownFocusInfo == null) {
+	g_TunerState.EnhancedTownFocusInfo = {};
+}
+
+// Import the EnhancedTownFocusInfo module if not already imported
+if (typeof EnhancedTownFocusInfo === 'undefined') {
+	try {
+		// Try different import paths
+		let importSuccessful = false;
+		
+		// Try to import directly from global scope first (may already be loaded)
+		if (typeof EnhancedTownFocusInfo !== 'undefined') {
+			console.log("EnhancedTownFocusInfo module already in global scope");
+			importSuccessful = true;
+		}
+		
+		// Try method 1: Direct module name
+		if (!importSuccessful) {
+			try {
+				importModule('EnhancedTownFocusInfo');
+				console.log("EnhancedTownFocusInfo module imported via direct name");
+				importSuccessful = true;
+			} catch (innerError) {
+				console.log("Could not import via direct name: " + innerError.message);
+			}
+		}
+		
+		// Try method 2: Relative path from mod
+		if (!importSuccessful) {
+			try {
+				importModule('Mods/Civ7EnhancedTownFocusInfo/modules/script/EnhancedTownFocusInfo');
+				console.log("EnhancedTownFocusInfo module imported via mod path");
+				importSuccessful = true;
+			} catch (innerError) {
+				console.log("Could not import via mod path: " + innerError.message);
+			}
+		}
+		
+		// Try method 3: Full path
+		if (!importSuccessful) {
+			try {
+				importModule('/c:/Program Files (x86)/Steam/steamapps/common/Sid Meier\'s Civilization VII/Mods/Civ7EnhancedTownFocusInfo/modules/script/EnhancedTownFocusInfo');
+				console.log("EnhancedTownFocusInfo module imported via full path");
+				importSuccessful = true;
+			} catch (innerError) {
+				console.log("Could not import via full path: " + innerError.message);
+			}
+		}
+		
+		// Try method 4: Just the script folder
+		if (!importSuccessful) {
+			try {
+				importModule('modules/script/EnhancedTownFocusInfo');
+				console.log("EnhancedTownFocusInfo module imported via script folder");
+				importSuccessful = true;
+			} catch (innerError) {
+				console.log("Could not import via script folder: " + innerError.message);
+			}
+		}
+		
+		if (!importSuccessful) {
+			throw new Error("Could not import EnhancedTownFocusInfo module using any known method");
+		}
+	} catch (e) {
+		console.error("Failed to import EnhancedTownFocusInfo module:", e);
+		
+		// Alternative approach - try to get module directly from the modding system
+		try {
+			// This is a fallback method that might work in Civ 7's modding system
+			const modContext = Mods.getModContext("Civ7EnhancedTownFocusInfo");
+			if (modContext &amp;&amp; modContext.EnhancedTownFocusInfo) {
+				console.log("Retrieved EnhancedTownFocusInfo from mod context");
+				window.EnhancedTownFocusInfo = modContext.EnhancedTownFocusInfo;
+			} else {
+				console.error("Mod context does not contain EnhancedTownFocusInfo");
+			}
+		} catch (modError) {
+			console.error("Failed to get mod context:", modError);
+		}
+	}
+}
+
+// Store reference to the module
+if (typeof EnhancedTownFocusInfo !== 'undefined') {
+	g_TunerState.EnhancedTownFocusInfo.module = EnhancedTownFocusInfo;
+	console.log("EnhancedTownFocusInfo module reference stored:", Object.keys(EnhancedTownFocusInfo));
+	
+	// Create adapter functions to ensure we can access the module's functions
+	g_TunerState.EnhancedTownFocusInfo.adapter = {
+		getTownFocusBoost: function(city, yieldType) {
+			try {
+				if (typeof EnhancedTownFocusInfo.getTownFocusBoost === 'function') {
+					return EnhancedTownFocusInfo.getTownFocusBoost(city, yieldType);
+				} else {
+					console.error("getTownFocusBoost function not found in module");
+					return 0;
+				}
+			} catch (e) {
+				console.error("Error calling getTownFocusBoost:", e);
+				return 0;
+			}
+		},
+		
+		getResourceCount: function(cityID) {
+			try {
+				if (typeof EnhancedTownFocusInfo.getResourceCount === 'function') {
+					return EnhancedTownFocusInfo.getResourceCount(cityID);
+				} else {
+					console.error("getResourceCount function not found in module");
+					return 0;
+				}
+			} catch (e) {
+				console.error("Error calling getResourceCount:", e);
+				return 0;
+			}
+		},
+		
+		getBuildingCount: function(cityID) {
+			try {
+				if (typeof EnhancedTownFocusInfo.getBuildingCount === 'function') {
+					return EnhancedTownFocusInfo.getBuildingCount(cityID);
+				} else {
+					console.error("getBuildingCount function not found in module");
+					return 0;
+				}
+			} catch (e) {
+				console.error("Error calling getBuildingCount:", e);
+				return 0;
+			}
+		},
+		
+		clearResourceCache: function() {
+			try {
+				if (typeof EnhancedTownFocusInfo.clearResourceCache === 'function') {
+					EnhancedTownFocusInfo.clearResourceCache();
+					return true;
+				} else {
+					console.error("clearResourceCache function not found in module");
+					return false;
+				}
+			} catch (e) {
+				console.error("Error calling clearResourceCache:", e);
+				return false;
+			}
+		}
+	};
+} else {
+	console.error("EnhancedTownFocusInfo module not available");
+}
+
+// Check if the global ETFI_MOD variable is available and use it instead
+if (typeof window !== 'undefined' &amp;&amp; window.ETFI_MOD) {
+	console.log("Found global ETFI_MOD object:", Object.keys(window.ETFI_MOD));
+	
+	// Create adapter functions using the ETFI_MOD global
+	g_TunerState.EnhancedTownFocusInfo.adapter = {
+		getTownFocusBoost: function(city, yieldType) {
+			try {
+				if (typeof window.ETFI_MOD.getTownFocusBoost === 'function') {
+					return window.ETFI_MOD.getTownFocusBoost(city, yieldType);
+				} else {
+					console.error("getTownFocusBoost function not found in ETFI_MOD");
+					return 0;
+				}
+			} catch (e) {
+				console.error("Error calling ETFI_MOD.getTownFocusBoost:", e);
+				return 0;
+			}
+		},
+		
+		getResourceCount: function(cityID) {
+			try {
+				if (typeof window.ETFI_MOD.getResourceCount === 'function') {
+					return window.ETFI_MOD.getResourceCount(cityID);
+				} else {
+					console.error("getResourceCount function not found in ETFI_MOD");
+					return 0;
+				}
+			} catch (e) {
+				console.error("Error calling ETFI_MOD.getResourceCount:", e);
+				return 0;
+			}
+		},
+		
+		getBuildingCount: function(cityID) {
+			try {
+				if (typeof window.ETFI_MOD.getBuildingCount === 'function') {
+					return window.ETFI_MOD.getBuildingCount(cityID);
+				} else {
+					console.error("getBuildingCount function not found in ETFI_MOD");
+					return 0;
+				}
+			} catch (e) {
+				console.error("Error calling ETFI_MOD.getBuildingCount:", e);
+				return 0;
+			}
+		},
+		
+		clearResourceCache: function() {
+			try {
+				if (typeof window.ETFI_MOD.clearResourceCache === 'function') {
+					window.ETFI_MOD.clearResourceCache();
+					return true;
+				} else {
+					console.error("clearResourceCache function not found in ETFI_MOD");
+					return false;
+				}
+			} catch (e) {
+				console.error("Error calling ETFI_MOD.clearResourceCache:", e);
+				return false;
+			}
+		}
+	};
+	
+	console.log("Created adapter using ETFI_MOD global");
+}
+
+// Check if individual functions are available through any method
+console.log("Module functions availability check:");
+console.log("getTownFocusBoost:", 
+	(g_TunerState.EnhancedTownFocusInfo.adapter &amp;&amp; typeof g_TunerState.EnhancedTownFocusInfo.adapter.getTownFocusBoost === 'function') || 
+	(g_TunerState.EnhancedTownFocusInfo.module &amp;&amp; typeof g_TunerState.EnhancedTownFocusInfo.module.getTownFocusBoost === 'function') ||
+	(window.ETFI_MOD &amp;&amp; typeof window.ETFI_MOD.getTownFocusBoost === 'function')
+);
+
+g_TunerState.EnhancedTownFocusInfo.isOpen = true;
+g_TunerState.openPanel = 'EnhancedTownFocusInfo';</EnterAction>
+  <ExitAction>if (typeof g_TunerState == 'undefined') {
+	g_TunerState = {};
+}
+if (g_TunerState.EnhancedTownFocusInfo == null) {
+	g_TunerState.EnhancedTownFocusInfo = {};
+}
+g_TunerState.EnhancedTownFocusInfo.isOpen = false;</ExitAction>
+  <CompatibleStates>
+    <string>App UI</string>
+  </CompatibleStates>
+  <LoadStates />
+  <Actions>
+    <ActionData>
+      <Name>Look At Selected City</Name>
+      <Action>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity)
+{
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city != null)
+	{
+		Camera.lookAtPlot(city.location);
+	}
+}</Action>
+      <Location>
+        <X>500</X>
+        <Y>60</Y>
+      </Location>
+    </ActionData>
+    <ActionData>
+      <Name>Add Rural Population (+1)</Name>
+      <Action>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity)
+{
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city != null)
+	{
+		city.addRuralPopulation(1);
+	}
+}</Action>
+      <Location>
+        <X>910</X>
+        <Y>150</Y>
+      </Location>
+    </ActionData>
+    <ActionData>
+      <Name>Remove Rural Population (-1)</Name>
+      <Action>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity)
+{
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city != null &amp;&amp; city.ruralPopulation &gt; 0)
+	{
+		city.addRuralPopulation(-1);
+	}
+}</Action>
+      <Location>
+        <X>910</X>
+        <Y>180</Y>
+      </Location>
+    </ActionData>
+    <ActionData>
+      <Name>Refresh Town Focus Data</Name>
+      <Action>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity)
+{
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city != null &amp;&amp; city.isTown)
+	{
+		// Clear any cached data if there's a clearResourceCache function
+		let clearCacheFunction = null;
+		if (g_TunerState.EnhancedTownFocusInfo.adapter) {
+			clearCacheFunction = g_TunerState.EnhancedTownFocusInfo.adapter.clearResourceCache;
+		} else if (g_TunerState.EnhancedTownFocusInfo.module &amp;&amp; 
+			typeof g_TunerState.EnhancedTownFocusInfo.module.clearResourceCache === 'function') {
+			clearCacheFunction = g_TunerState.EnhancedTownFocusInfo.module.clearResourceCache;
+		}
+		
+		if (clearCacheFunction) {
+			clearCacheFunction(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+			console.log("Cleared resource cache for town focus data");
+		} else {
+			console.log("No clearResourceCache function available");
+		}
+		
+		// Force immediate refresh of all relevant controls
+		tunerRefreshControl('City Details:120;Value:200');
+		tunerRefreshControl('City Yields:120;Value:80');
+		tunerRefreshControl('Town Focus Details:180;Value:120');
+		tunerRefreshControl('Module Status Info:180;Value:120');
+		tunerRefreshControl('Food Queue:200;Progress:60;Location:80');
+		tunerRefreshControl('Town Focus Types:200;Priority:100');
+		tunerRefreshControl('Current Town Focus');
+		
+		console.log("Town focus data for selected town has been refreshed");
+	}
+}</Action>
+      <Location>
+        <X>910</X>
+        <Y>208</Y>
+      </Location>
+    </ActionData>
+    <ActionData>
+      <Name>Refresh All Controls</Name>
+      <Action>// Refresh all key controls in the panel
+tunerRefreshControl('ID:60;Location;Name;Status;Owner');
+tunerRefreshControl('Towns Only:60;Location;Name;Owner');
+tunerRefreshControl('City Details:120;Value:200');
+tunerRefreshControl('City Yields:120;Value:80');
+tunerRefreshControl('Town Focus Details:180;Value:120'); 
+tunerRefreshControl('Module Status Info:180;Value:120');
+tunerRefreshControl('Food Queue:200;Progress:60;Location:80');
+tunerRefreshControl('Town Focus Types:200;Priority:100');
+
+// Refresh string controls
+tunerRefreshControl('Status');
+tunerRefreshControl('Selected City');
+tunerRefreshControl('Current Town Focus');
+tunerRefreshControl('Total Towns');
+tunerRefreshControl('Food Queue');
+tunerRefreshControl('Module Status');
+
+// Refresh other control types
+tunerRefreshControl('Rural Population');
+tunerRefreshControl('Is Town');
+tunerRefreshControl('Show Only Towns');
+
+console.log("All controls refreshed");</Action>
+      <Location>
+        <X>910</X>
+        <Y>235</Y>
+      </Location>
+    </ActionData>
+  </Actions>
+  <StringControls>
+    <StringControlData>
+      <Name>Status</Name>
+      <GetFunction>return "Enhanced Town Focus Info Panel Active";</GetFunction>
+      <SetFunction />
+      <Location>
+        <X>20</X>
+        <Y>20</Y>
+      </Location>
+    </StringControlData>
+    <StringControlData>
+      <Name>Selected City</Name>
+      <GetFunction>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity) {
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city != null) {
+		let cityName = Locale.compose(city.name);
+		cityName = cityName.replace('LOC_CITY_NAME_', '');
+		let cityStatus = city.isTown ? "Town" : "City";
+		return cityName + " (" + cityStatus + ")";
+	}
+	return "No city selected";
+} else {
+	return "No city selected";
+}</GetFunction>
+      <SetFunction />
+      <Location>
+        <X>500</X>
+        <Y>20</Y>
+      </Location>
+    </StringControlData>
+    <StringControlData>
+      <Name>Total Towns</Name>
+      <GetFunction>let townCount = 0;
+if (typeof Players != 'undefined')
+{
+	for (const id of Players.getWasEverAliveIds())
+	{
+		let player = Players.get(id);
+		let pCities = player.Cities;
+		for (const cityId of pCities.getCityIds()) {
+			let pCity = Cities.get(cityId);
+			if (pCity != null &amp;&amp; pCity.isTown) {
+				townCount++;
+			}
+		}
+	}
+}
+return townCount;</GetFunction>
+      <SetFunction />
+      <Location>
+        <X>500</X>
+        <Y>90</Y>
+      </Location>
+    </StringControlData>
+    <StringControlData>
+      <Name>Food Queue</Name>
+      <GetFunction>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity) {
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city != null) {
+		const cityFoodQueue = city.FoodQueue;
+		if (cityFoodQueue) {
+			const queueItems = cityFoodQueue.getQueue();
+			if (queueItems &amp;&amp; queueItems.length &gt; 0) {
+				const item = queueItems[0];
+				return cityFoodQueue.getProductionKindName(item.kind) + " - " + 
+					cityFoodQueue.getProductionTypeName(item.type, item.kind);
+			}
+			return "Empty Food Queue";
+		}
+		return "No Food Queue";
+	}
+	return "No city selected";
+} else {
+	return "No city selected";
+}</GetFunction>
+      <SetFunction />
+      <Location>
+        <X>910</X>
+        <Y>280</Y>
+      </Location>
+    </StringControlData>
+    <StringControlData>
+      <Name>Current Town Focus</Name>
+      <GetFunction>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity) {
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city != null &amp;&amp; city.isTown) {
+		// Check if we have access to the module or adapter
+		if (g_TunerState.EnhancedTownFocusInfo.adapter || g_TunerState.EnhancedTownFocusInfo.module) {
+			// Get the town focus data
+			try {
+				// Determine the best town focus based on yields
+				const yields = ["YIELD_FOOD", "YIELD_PRODUCTION", "YIELD_GOLD", "YIELD_SCIENCE", "YIELD_CULTURE"];
+				let bestYield = "";
+				let bestValue = -1;
+				
+				for (const yieldType of yields) {
+					// Try to use adapter first, fall back to module direct access
+					let boostFunction = g_TunerState.EnhancedTownFocusInfo.adapter ? 
+						g_TunerState.EnhancedTownFocusInfo.adapter.getTownFocusBoost :
+						(g_TunerState.EnhancedTownFocusInfo.module &amp;&amp; typeof g_TunerState.EnhancedTownFocusInfo.module.getTownFocusBoost === 'function' ? 
+							g_TunerState.EnhancedTownFocusInfo.module.getTownFocusBoost : null);
+					
+					if (boostFunction) {
+						const boostValue = boostFunction(city, yieldType);
+						if (boostValue &gt; bestValue) {
+							bestValue = boostValue;
+							bestYield = yieldType;
+						}
+					}
+				}
+				
+				if (bestYield) {
+					return bestYield.replace("YIELD_", "") + " Focus (+" + bestValue + ")";
+				}
+				
+				return "No focus data available";
+			} catch (e) {
+				console.error("Error getting town focus:", e);
+				return "Error: " + e.message;
+			}
+		}
+		return "Module not available";
+	} else if (city != null) {
+		return "Not a town";
+	}
+	return "No city selected";
+} else {
+	return "No city selected";
+}</GetFunction>
+      <SetFunction />
+      <Location>
+        <X>480</X>
+        <Y>390</Y>
+      </Location>
+    </StringControlData>
+    <StringControlData>
+      <Name>Module Status</Name>
+      <GetFunction>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.module) {
+	return "Module loaded";
+} else {
+	return "Module not loaded";
+}</GetFunction>
+      <SetFunction />
+      <Location>
+        <X>160</X>
+        <Y>20</Y>
+      </Location>
+    </StringControlData>
+  </StringControls>
+  <IntegerControls>
+    <IntegerControlData>
+      <Name>Rural Population</Name>
+      <GetFunction>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity) {
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city != null) {
+		return city.ruralPopulation;
+	}
+	return 0;
+} else {
+	return 0;
+}</GetFunction>
+      <SetFunction>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity) {
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city != null) {
+		const current = city.ruralPopulation;
+		const diff = value - current;
+		city.addRuralPopulation(diff);
+	}
+}</SetFunction>
+      <Location>
+        <X>910</X>
+        <Y>310</Y>
+      </Location>
+      <DefaultValue>0</DefaultValue>
+    </IntegerControlData>
+  </IntegerControls>
+  <FloatControls />
+  <BooleanControls>
+    <BooleanControlData>
+      <Name>Show Only Towns</Name>
+      <GetFunction>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo) {
+	return g_TunerState.EnhancedTownFocusInfo.showOnlyTowns === true;
+} else {
+	return false;
+}</GetFunction>
+      <SetFunction>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo) {
+	g_TunerState.EnhancedTownFocusInfo.showOnlyTowns = value;
+	
+	// Refresh the city lists when the filter changes
+	tunerRefreshControl('ID:60;Location;Name;Status;Owner');
+	tunerRefreshControl('Towns Only:60;Location;Name;Owner');
+}</SetFunction>
+      <Location>
+        <X>500</X>
+        <Y>120</Y>
+      </Location>
+    </BooleanControlData>
+    <BooleanControlData>
+      <Name>Is Town</Name>
+      <GetFunction>if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity) {
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city != null) {
+		return city.isTown;
+	}
+	return false;
+} else {
+	return false;
+}</GetFunction>
+      <SetFunction>// Note: This is a read-only property in the API
+// Cannot directly change a city's town status</SetFunction>
+      <Location>
+        <X>910</X>
+        <Y>340</Y>
+      </Location>
+    </BooleanControlData>
+  </BooleanControls>
+  <TableViews />
+  <TreeViews />
+  <DataViews />
+  <StatTrackers />
+  <SelectionLists>
+    <SelectionListData>
+      <Location>
+        <X>20</X>
+        <Y>60</Y>
+      </Location>
+      <Size>
+        <Width>431</Width>
+        <Height>361</Height>
+      </Size>
+      <Name>ID:60;Location;Name;Status;Owner</Name>
+      <PopulateList>if (typeof Players != 'undefined') 
+{
+	let items = [];
+	for (const id of Players.getWasEverAliveIds())
+	{
+		let player = Players.get(id);
+		
+		let strPlayer = Locale.compose(player.civilizationFullName);
+		if (!strPlayer || strPlayer.length == 0)
+		{
+			strPlayer = "Player " + id;
+		}
+
+		let pCities = player.Cities;
+		for (const cityId of pCities.getCityIds()) {
+
+			let pCity = Cities.get(cityId);
+			if (pCity != null) {
+				// Skip non-towns if filter is enabled
+				if (typeof g_TunerState != 'undefined' &amp;&amp; 
+					g_TunerState.EnhancedTownFocusInfo &amp;&amp; 
+					g_TunerState.EnhancedTownFocusInfo.showOnlyTowns === true &amp;&amp; 
+					!pCity.isTown) {
+					continue;
+				}
+				
+				let cityName = Locale.compose(pCity.name);
+				cityName = cityName.replace('LOC_CITY_NAME_', '');
+													
+				let cityStatus = "City";
+				if (pCity.isTown)
+				{
+					cityStatus = "Town";
+				}
+
+				let cityLocation = pCity.location;
+				let str = cityId.owner + "," + cityId.id + ";" + cityLocation.x + ", " + cityLocation.y + ";" + cityName + ";" + cityStatus + ";" + strPlayer;
+				items.push(str);
+			}
+		}
+	}
+
+	return items;
+}</PopulateList>
+      <OnSelection>let strs = selection.split(',');
+
+let cityId = {};
+cityId.owner = Number(strs[0]);
+cityId.id = Number(strs[1]);
+cityId.type = ComponentIDTypes.CITY;
+if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo)
+{
+	g_TunerState.EnhancedTownFocusInfo.selectedCity = cityId;
+	
+	// Refresh all controls when a city is selected
+	tunerRefreshControl('City Details:120;Value:200');
+	tunerRefreshControl('City Yields:120;Value:80');
+	tunerRefreshControl('Town Focus Details:180;Value:120');
+	tunerRefreshControl('Module Status Info:180;Value:120');
+	tunerRefreshControl('Food Queue:200;Progress:60;Location:80');
+	tunerRefreshControl('Town Focus Types:200;Priority:100');
+}
+</OnSelection>
+      <Sorted>false</Sorted>
+    </SelectionListData>
+    <SelectionListData>
+      <Location>
+        <X>20</X>
+        <Y>430</Y>
+      </Location>
+      <Size>
+        <Width>431</Width>
+        <Height>200</Height>
+      </Size>
+      <Name>Towns Only:60;Location;Name;Owner</Name>
+      <PopulateList>if (typeof Players != 'undefined') 
+{
+	let items = [];
+	for (const id of Players.getWasEverAliveIds())
+	{
+		let player = Players.get(id);
+		
+		let strPlayer = Locale.compose(player.civilizationFullName);
+		if (!strPlayer || strPlayer.length == 0)
+		{
+			strPlayer = "Player " + id;
+		}
+
+		let pCities = player.Cities;
+		for (const cityId of pCities.getCityIds()) {
+
+			let pCity = Cities.get(cityId);
+			if (pCity != null &amp;&amp; pCity.isTown) {
+				let cityName = Locale.compose(pCity.name);
+				cityName = cityName.replace('LOC_CITY_NAME_', '');
+				
+				let cityLocation = pCity.location;
+				let str = cityId.owner + "," + cityId.id + ";" + cityLocation.x + ", " + cityLocation.y + ";" + cityName + ";" + strPlayer;
+				items.push(str);
+			}
+		}
+	}
+
+	return items;
+}</PopulateList>
+      <OnSelection>let strs = selection.split(',');
+
+let cityId = {};
+cityId.owner = Number(strs[0]);
+cityId.id = Number(strs[1]);
+cityId.type = ComponentIDTypes.CITY;
+if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo)
+{
+	g_TunerState.EnhancedTownFocusInfo.selectedCity = cityId;
+	
+	// Refresh all controls when a city is selected
+	tunerRefreshControl('City Details:120;Value:200');
+	tunerRefreshControl('City Yields:120;Value:80');
+	tunerRefreshControl('Town Focus Details:180;Value:120');
+	tunerRefreshControl('Module Status Info:180;Value:120');
+	tunerRefreshControl('Food Queue:200;Progress:60;Location:80');
+	tunerRefreshControl('Town Focus Types:200;Priority:100');
+}
+</OnSelection>
+      <Sorted>false</Sorted>
+    </SelectionListData>
+    <SelectionListData>
+      <Location>
+        <X>500</X>
+        <Y>150</Y>
+      </Location>
+      <Size>
+        <Width>350</Width>
+        <Height>120</Height>
+      </Size>
+      <Name>City Details:120;Value:200</Name>
+      <PopulateList>let items = [];
+if (typeof g_TunerState !== 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity)
+{
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city !== null)
+	{
+		items.push("Name;" + Locale.compose(city.name).replace('LOC_CITY_NAME_', ''));
+		items.push("Type;" + (city.isTown ? "Town" : "City"));
+		items.push("Location;" + city.location.x + ", " + city.location.y);
+		items.push("Owner;" + city.owner);
+		items.push("Rural Population;" + city.ruralPopulation);
+		
+		const cityFoodQueue = city.FoodQueue;
+		if (cityFoodQueue) {
+			items.push("Food Per Turn;" + cityFoodQueue.getFoodPerTurn());
+		}
+	}
+}
+return items;</PopulateList>
+      <OnSelection />
+      <Sorted>false</Sorted>
+    </SelectionListData>
+    <SelectionListData>
+      <Location>
+        <X>480</X>
+        <Y>613</Y>
+      </Location>
+      <Size>
+        <Width>1391</Width>
+        <Height>166</Height>
+      </Size>
+      <Name>City Yields:120;Value:80</Name>
+      <PopulateList>let items = [];
+if (typeof g_TunerState !== 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity)
+{
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city !== null)
+	{
+		const yields = city.Yields.getYields();
+		
+		if (yields) {
+			let yieldIndex = 0;
+			for (const yieldValue of yields) {
+				if (GameInfo.Yields &amp;&amp; yieldIndex &lt; GameInfo.Yields.length) {
+					let yieldType = GameInfo.Yields[yieldIndex].YieldType.toString();
+					items.push(yieldType + ";" + (typeof yieldValue === 'object' ? JSON.stringify(yieldValue) : yieldValue));
+				}
+				yieldIndex++;
+			}
+		}
+	}
+}
+return items;</PopulateList>
+      <OnSelection />
+      <Sorted>false</Sorted>
+    </SelectionListData>
+    <SelectionListData>
+      <Location>
+        <X>480</X>
+        <Y>432</Y>
+      </Location>
+      <Size>
+        <Width>1389</Width>
+        <Height>172</Height>
+      </Size>
+      <Name>Town Focus Details:180;Value:120</Name>
+      <PopulateList>let items = [];
+if (typeof g_TunerState !== 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity)
+{
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city !== null &amp;&amp; city.isTown)
+	{
+		if (g_TunerState.EnhancedTownFocusInfo.adapter || g_TunerState.EnhancedTownFocusInfo.module) {
+			try {
+				// Process each yield type
+				const yieldTypes = [
+					{ id: "YIELD_FOOD", name: "Food Focus" },
+					{ id: "YIELD_PRODUCTION", name: "Production Focus" },
+					{ id: "YIELD_GOLD", name: "Gold Focus" },
+					{ id: "YIELD_SCIENCE", name: "Science Focus" },
+					{ id: "YIELD_CULTURE", name: "Culture Focus" }
+				];
+				
+				for (const yieldType of yieldTypes) {
+					// Get town focus boost for this yield using adapter if available
+					let boostFunction = g_TunerState.EnhancedTownFocusInfo.adapter ? 
+						g_TunerState.EnhancedTownFocusInfo.adapter.getTownFocusBoost :
+						(g_TunerState.EnhancedTownFocusInfo.module &amp;&amp; typeof g_TunerState.EnhancedTownFocusInfo.module.getTownFocusBoost === 'function' ? 
+							g_TunerState.EnhancedTownFocusInfo.module.getTownFocusBoost : null);
+					
+					if (boostFunction) {
+						const boostValue = boostFunction(city, yieldType.id);
+						items.push(yieldType.name + " Boost;+" + (typeof boostValue === 'object' ? JSON.stringify(boostValue) : boostValue));
+					}
+				}
+				
+				// Add resource counts
+				let resourceCountFunction = g_TunerState.EnhancedTownFocusInfo.adapter ? 
+					g_TunerState.EnhancedTownFocusInfo.adapter.getResourceCount :
+					(g_TunerState.EnhancedTownFocusInfo.module &amp;&amp; typeof g_TunerState.EnhancedTownFocusInfo.module.getResourceCount === 'function' ? 
+						g_TunerState.EnhancedTownFocusInfo.module.getResourceCount : null);
+				
+				if (resourceCountFunction) {
+					const resourceCount = resourceCountFunction(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+					items.push("Resource Count;" + (typeof resourceCount === 'object' ? JSON.stringify(resourceCount) : resourceCount));
+				}
+				
+				// Add building counts
+				let buildingCountFunction = g_TunerState.EnhancedTownFocusInfo.adapter ? 
+					g_TunerState.EnhancedTownFocusInfo.adapter.getBuildingCount :
+					(g_TunerState.EnhancedTownFocusInfo.module &amp;&amp; typeof g_TunerState.EnhancedTownFocusInfo.module.getBuildingCount === 'function' ? 
+						g_TunerState.EnhancedTownFocusInfo.module.getBuildingCount : null);
+				
+				if (buildingCountFunction) {
+					const buildingCount = buildingCountFunction(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+					items.push("Building Count;" + (typeof buildingCount === 'object' ? JSON.stringify(buildingCount) : buildingCount));
+				}
+			} catch (e) {
+				items.push("Error;" + e.message);
+			}
+		} else {
+			items.push("Status;Module not available");
+		}
+	}
+	else if (city != null)
+	{
+		items.push("Status;Selected settlement is not a town");
+	}
+}
+return items;</PopulateList>
+      <OnSelection />
+      <Sorted>false</Sorted>
+    </SelectionListData>
+    <SelectionListData>
+      <Location>
+        <X>1230</X>
+        <Y>51</Y>
+      </Location>
+      <Size>
+        <Width>400</Width>
+        <Height>50</Height>
+      </Size>
+      <Name>Module Status Info:180;Value:120</Name>
+      <PopulateList>let items = [];
+if (typeof g_TunerState !== 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo)
+{
+	// Module Info
+	if (g_TunerState.EnhancedTownFocusInfo.adapter) {
+		items.push("Adapter Status;Connected");
+	} else {
+		items.push("Adapter Status;Not Connected");
+	}
+	
+	if (g_TunerState.EnhancedTownFocusInfo.module) {
+		items.push("Module Status;Loaded");
+	} else {
+		items.push("Module Status;Not Loaded");
+	}
+	
+	// Add available functions from the module for debug purposes
+	let availableFunctions = [];
+	if (g_TunerState.EnhancedTownFocusInfo.adapter) {
+		availableFunctions.push("Using adapter interface");
+	} else if (g_TunerState.EnhancedTownFocusInfo.module &amp;&amp; typeof g_TunerState.EnhancedTownFocusInfo.module.getTownFocusBoost === 'function') {
+		availableFunctions.push("getTownFocusBoost");
+	}
+	
+	// Only check for functions if module exists
+	if (g_TunerState.EnhancedTownFocusInfo.module) {
+		if (typeof g_TunerState.EnhancedTownFocusInfo.module.getResourceCount === 'function') {
+			availableFunctions.push("getResourceCount");
+		}
+		if (typeof g_TunerState.EnhancedTownFocusInfo.module.getBuildingCount === 'function') {
+			availableFunctions.push("getBuildingCount");
+		}
+		if (typeof g_TunerState.EnhancedTownFocusInfo.module.getImprovementCount === 'function') {
+			availableFunctions.push("getImprovementCount");
+		}
+	} else if (window.ETFI_MOD) {
+		if (typeof window.ETFI_MOD.getResourceCount === 'function') {
+			availableFunctions.push("getResourceCount");
+		}
+		if (typeof window.ETFI_MOD.getBuildingCount === 'function') {
+			availableFunctions.push("getBuildingCount");
+		}
+		if (typeof window.ETFI_MOD.getImprovementCount === 'function') {
+			availableFunctions.push("getImprovementCount");
+		}
+	}
+	
+	items.push("Available Functions;" + availableFunctions.join(", "));
+}
+return items;</PopulateList>
+      <OnSelection />
+      <Sorted>false</Sorted>
+    </SelectionListData>
+    <SelectionListData>
+      <Location>
+        <X>20</X>
+        <Y>635</Y>
+      </Location>
+      <Size>
+        <Width>431</Width>
+        <Height>164</Height>
+      </Size>
+      <Name>Town Focus Types:200;Priority:100</Name>
+      <PopulateList>let items = [];
+if (typeof g_TunerState !== 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo &amp;&amp; g_TunerState.EnhancedTownFocusInfo.selectedCity)
+{
+	let city = Cities.get(g_TunerState.EnhancedTownFocusInfo.selectedCity);
+	if (city !== null &amp;&amp; city.isTown)
+	{
+		try {
+			// Get focus boost for each yield type
+			const yieldTypes = [
+				{ id: "YIELD_FOOD", name: "Food Focus" },
+				{ id: "YIELD_PRODUCTION", name: "Production Focus" },
+				{ id: "YIELD_GOLD", name: "Gold Focus" },
+				{ id: "YIELD_SCIENCE", name: "Science Focus" },
+				{ id: "YIELD_CULTURE", name: "Culture Focus" }
+			];
+			
+			// Get the boost function (try adapter first, then module)
+			let boostFunction = null;
+			if (g_TunerState.EnhancedTownFocusInfo.adapter) {
+				boostFunction = g_TunerState.EnhancedTownFocusInfo.adapter.getTownFocusBoost;
+			} else if (g_TunerState.EnhancedTownFocusInfo.module &amp;&amp; typeof g_TunerState.EnhancedTownFocusInfo.module.getTownFocusBoost === 'function') {
+				boostFunction = g_TunerState.EnhancedTownFocusInfo.module.getTownFocusBoost;
+			}
+			
+			if (boostFunction) {
+				for (const yieldType of yieldTypes) {
+					const boostValue = boostFunction(city, yieldType.id);
+					
+					// Determine priority level based on boost value
+					let priority = "Low";
+					if (boostValue &gt;= 5) priority = "High";
+					else if (boostValue &gt;= 2) priority = "Medium";
+					
+					items.push(yieldType.name + " (+" + (typeof boostValue === 'object' ? JSON.stringify(boostValue) : boostValue) + ");" + priority);
+				}
+			} else {
+				console.warn("No boost function available");
+			}
+		} catch (e) {
+			items.push("Error: " + e.message + ";Unknown");
+		}
+	}
+}
+
+// If we couldn't get actual data, show some placeholder data
+if (items.length === 0) {
+	items.push("Food Focus;High");
+	items.push("Production Focus;Medium");
+	items.push("Gold Focus;Low");
+	items.push("Science Focus;Low");
+	items.push("Culture Focus;Medium");
+}
+
+return items;</PopulateList>
+      <OnSelection>// If you need to handle selection of focus types, add code here
+// For example:
+// if (typeof g_TunerState != 'undefined' &amp;&amp; g_TunerState.EnhancedTownFocusInfo) {
+//    g_TunerState.EnhancedTownFocusInfo.selectedFocusType = selection.split(';')[0];
+// }</OnSelection>
+      <Sorted>false</Sorted>
+    </SelectionListData>
+  </SelectionLists>
+  <MultiselectLists />
+</PanelData>

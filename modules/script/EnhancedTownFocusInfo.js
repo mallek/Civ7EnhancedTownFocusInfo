@@ -1,15 +1,22 @@
 /**
  * Enhanced Town Focus Info Mod - Makes Town Focus Tooltips more informative
  * Author: Mallek
- * Version: 1.1.8
+ * Version: 1.1.9
  */
 
 // Set to false for production, true for debugging
-const DEV_MODE = false;
+const DEV_MODE = true;
+
+// Create a global reference to expose functions for debugging
+window.ETFI_MOD = {};
 
 (function() {
     // Development constants
-    const VERSION = "1.1.8";
+    const VERSION = "1.1.9";
+    
+    // Expose constants for debug panel
+    window.ETFI_MOD.VERSION = VERSION;
+    window.ETFI_MOD.DEV_MODE = DEV_MODE;
 
     // Add safe logging function
     function log(...args) {
@@ -556,6 +563,13 @@ const DEV_MODE = false;
             return;
         }
 
+        const city = Cities.get(cityID);
+        if (!city) {
+            log('City not found');
+            clearTooltipContent(tooltip);
+            return;
+        }
+
         const l10nId = tooltip.querySelector("[data-l10n-id]")?.getAttribute("data-l10n-id");
         log('Tooltip ID:', l10nId);
 
@@ -598,6 +612,27 @@ const DEV_MODE = false;
             newInfo.appendChild(versionDiv);
         }
         
+        // Get town focus boost information based on tooltip type
+        let townFocusBoostCount = 0;
+        let yieldType = null;
+        
+        if (l10nId === "LOC_PROJECT_TOWN_GRANARY_NAME" || l10nId === "LOC_PROJECT_TOWN_FISHING_NAME") {
+            yieldType = "YIELD_FOOD";
+        } else if (l10nId === "LOC_PROJECT_TOWN_PRODUCTION_NAME") {
+            yieldType = "YIELD_PRODUCTION";
+        } else if (l10nId === "LOC_PROJECT_TOWN_URBAN_CENTER_NAME") {
+            // Urban center affects science and culture, we'll default to science for the boost count
+            yieldType = "YIELD_SCIENCE";
+        } else if (l10nId === "LOC_PROJECT_TOWN_INN_NAME") {
+            yieldType = "YIELD_DIPLOMACY";
+        } else if (l10nId === "LOC_PROJECT_TOWN_TRADE_NAME") {
+            yieldType = "YIELD_HAPPINESS";
+        }
+        
+        if (yieldType) {
+            townFocusBoostCount = getTownFocusBoost(city, yieldType);
+            log(`Town Focus Boost for ${yieldType}: ${townFocusBoostCount}`);
+        }
 
         // Style the total section
         const totalDiv = document.createElement('div');
@@ -654,7 +689,29 @@ const DEV_MODE = false;
                 totalDiv.appendChild(iconDiv);
             });
         }
+        
         newInfo.appendChild(totalDiv);
+        
+        // Add Town Focus Boost information if available
+        if (townFocusBoostCount > 0) {
+            const boostDiv = document.createElement('div');
+            boostDiv.style.cssText = `
+                display: flex;
+                align-items: center;
+                font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)};
+                margin-bottom: 8px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            `;
+            
+            // Show town focus boost count
+            boostDiv.innerHTML = `
+                <div style="margin-right: 8px;">Town Focus Boost:</div>
+                <div style="font-weight: bold; color: #8dc63f;">+${townFocusBoostCount}</div>
+            `;
+            
+            newInfo.appendChild(boostDiv);
+        }
 
         // Style the breakdown section
         const breakdownDiv = document.createElement('div');
@@ -857,6 +914,43 @@ const DEV_MODE = false;
             newInfo.appendChild(breakdownDiv);
         }
 
+        // Add detailed town focus boost explanation if available
+        if (townFocusBoostCount > 0) {
+            const boostExplanationDiv = document.createElement('div');
+            boostExplanationDiv.style.cssText = `
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                font-size: ${getScaledFontSize(FONT_SIZES.SMALL)};
+                color: #aaa;
+            `;
+            
+            let explanation = "";
+            switch(yieldType) {
+                case "YIELD_FOOD":
+                    explanation = `Each farm, pasture, plantation, and fishing boat providing a Town Focus boost: ${townFocusBoostCount}`;
+                    break;
+                case "YIELD_PRODUCTION":
+                    explanation = `Each mine, woodcutter, quarry, and camp providing a Town Focus boost: ${townFocusBoostCount}`;
+                    break;
+                case "YIELD_SCIENCE":
+                case "YIELD_CULTURE":
+                    explanation = `Each specialty district providing a Town Focus boost: ${townFocusBoostCount}`;
+                    break;
+                case "YIELD_DIPLOMACY":
+                    explanation = `Each trade route providing a Town Focus boost: ${townFocusBoostCount}`;
+                    break;
+                case "YIELD_HAPPINESS":
+                    explanation = `Each luxury resource providing a Town Focus boost: ${townFocusBoostCount}`;
+                    break;
+                default:
+                    explanation = `Town Focus boost count: ${townFocusBoostCount}`;
+            }
+            
+            boostExplanationDiv.textContent = explanation;
+            newInfo.appendChild(boostExplanationDiv);
+        }
+
         tooltipContent.appendChild(newInfo);
     }
 
@@ -926,6 +1020,151 @@ const DEV_MODE = false;
         const city = GameplayMap.getCityAt(plotCoord.x, plotCoord.y);
         return city;
     }
+
+    // Town Focus Boost calculation
+    function getTownFocusBoost(city, yieldType) {
+        if (!city) return 0;
+        
+        const cityYields = city?.Yields;
+        let townFocusBoostCount = 0;
+
+        if (city && cityYields) {
+            const cityYieldsInfos = cityYields.getYields();
+            if (cityYieldsInfos != null) {
+                cityYieldsInfos.forEach((cityYieldsInfo, i) => {
+                    const yieldInfo = GameInfo.Yields[i];
+                    if (yieldInfo && yieldInfo.YieldType == yieldType) {
+                        townFocusBoostCount = getYieldData(yieldType, cityYieldsInfo);
+                    }
+                });
+            }
+        }
+        return townFocusBoostCount;
+    }
+
+    function getYieldData(yieldType, cityYieldsInfo) {
+        let townFocusBoostCount = 0;
+
+        if (cityYieldsInfo.base) {
+            let result = getStepData(cityYieldsInfo.base.steps, cityYieldsInfo.type, false, yieldType);
+            townFocusBoostCount = result.townFocusBoostCount;
+        }
+
+        return townFocusBoostCount;
+    }
+
+    function getStepData(steps, parentStepType, isModifier, yieldType) {
+        if (!steps) return { childData: [], townFocusBoostCount: 0 };
+
+        let townFocusBoostCount = 0;
+        let townFocusBoostSet = false;
+        const childData = [];
+
+        for (let i = 0; i < steps.length; i++) {
+            let step = steps[i];
+            let stepDescription = step.description || 
+                (GameInfo.StepTypes?.[step.type]?.Name) || 
+                (step.base && step.base.steps?.length > 0 ? "(Nested Step)" : "(Unknown Description)");
+            
+            if (step.value != 0) {
+                if (step.base && i == 1 && !townFocusBoostSet) {
+                    townFocusBoostCount = getTownFocusBoostFromStep(step.base, yieldType);
+                    townFocusBoostSet = true;
+                    
+                    // Return immediately if we found the boost
+                    return { childData: [], townFocusBoostCount };
+                }
+                
+                const yieldData = {
+                    label: stepDescription,
+                    value: '',
+                    valueNum: step.value,
+                    valueType: parentStepType,
+                    showIcon: false,
+                    isNegative: step.value < 0,
+                    isModifier: isModifier,
+                    childData: []
+                };
+
+                let baseData = getStepData(step.base?.steps, step.type, false, yieldType);
+
+                // If we received a townFocusBoostCount from a lower getStepData(), maintain it
+                if (baseData.townFocusBoostCount > 0) {
+                    townFocusBoostCount = baseData.townFocusBoostCount;
+                }
+
+                yieldData.childData.push(...baseData.childData);
+                childData.push(yieldData);
+            }
+        }
+
+        return { childData, townFocusBoostCount };
+    }
+
+    function getTownFocusBoostFromStep(step, yieldType) {
+        let count = 0;
+        const excludeIdsMap = {
+            'YIELD_FOOD': new Set([168372657, -1819558972, -10786057, 1156962363, 1802136411]),
+            'YIELD_PRODUCTION': new Set([1105115884, 1001859687]),
+            // Add other yields as needed
+        };
+
+        const excludeIds = excludeIdsMap[yieldType] || new Set();
+
+        function traverseSteps(steps) {
+            if (!steps || !Array.isArray(steps)) return;
+
+            steps.forEach(subStep => {
+                if (subStep.id === 2) { // Warehouse bonus (id: 2)
+                    let shouldCount = true;
+                    let tile = null;
+                    
+                    if (subStep.steps && subStep.steps.length > 0) {
+                        for (const innerStep of subStep.steps) {
+                            if (excludeIds.has(innerStep.id) || innerStep.id === 8) {
+                                // If ID is in exclude list or is "by resource" (id: 8), don't count
+                                shouldCount = false;
+                                break;
+                            }
+                            if (!tile || tile === 0) {
+                                tile = innerStep.id;
+                            }
+                        }
+                    } else {
+                        // Don't count if warehouse bonus steps are empty
+                        shouldCount = false;
+                    }
+
+                    if (shouldCount && tile) {
+                        count++;
+                        if (DEV_MODE) {
+                            log(`[Town Focus Boost] Counted tile: ${tile}, total: ${count}`);
+                        }
+                    }
+                }
+
+                // Explore base.steps too
+                if (subStep.base?.steps) {
+                    traverseSteps(subStep.base.steps);
+                }
+
+                // Explore steps
+                if (subStep.steps) {
+                    traverseSteps(subStep.steps);
+                }
+            });
+        }
+
+        traverseSteps(step.steps);
+        return count;
+    }
+
+    // Expose key functions for the debug panel
+    window.ETFI_MOD.clearResourceCache = clearResourceCache;
+    window.ETFI_MOD.getResourceCount = getResourceCount;
+    window.ETFI_MOD.getImprovementCount = getImprovementCount;
+    window.ETFI_MOD.getBuildingCount = getBuildingCount;
+    window.ETFI_MOD.getTownFocusBoost = getTownFocusBoost;
 
     startTooltipObserver();
     log('ETFI Initialization complete');
