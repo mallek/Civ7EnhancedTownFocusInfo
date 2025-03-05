@@ -153,7 +153,7 @@ VALUES
     ('LOC_MOD_ETFI_RESOURCES',	        'zh_Hans_CN',	'资源'),
     -- Korean
     ('LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO',		'ko_KR',	'Enhanced Town Focus Info (향상된 마을 전문화)'),
-    ('LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION',	'ko_KR',	'마을 전문화를 선택할 때 시설, 건물 및 교역로에서 자세한 보너스를 분석해 보여줍니다'),
+    ('LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION',	'ko_KR',	'마을 전문화를 선택할 때 시설, 건물 및 교역로에서 자세한 보너스를 분석해 보여줍니다.'),
     ('LOC_MOD_ETFI_SPECIAL_QUARTERS',		'ko_KR',	'특수 지구'),
     ('LOC_MOD_ETFI_BUILDING_QUARTERS',		'ko_KR',	'건물 구역'),
     ('LOC_MOD_ETFI_UNIQUE_QUARTERS',		'ko_KR',	'문명 특유 구역'),
