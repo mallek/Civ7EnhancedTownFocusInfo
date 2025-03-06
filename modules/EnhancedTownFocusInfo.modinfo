@@ -20,6 +20,7 @@
 		<File>text/ru_RU/ModuleText.xml</File>
 		<File>text/pl_PL/ModuleText.xml</File>
 		<File>text/zh_Hans_CN/ModuleText.xml</File>
+		<File>text/ko_kr/ModuleText.xml</File>
 	</Files>
 	<ActionCriteria>
 		<Criteria id="always">
@@ -45,5 +46,6 @@
 		<File>text/ru_RU/ModuleText.xml</File>
 		<File>text/pl_PL/ModuleText.xml</File>
 		<File>text/zh_Hans_CN/ModuleText.xml</File>
+		<File>text/ko_kr/ModuleText.xml</File>
 	</LocalizedText>
 </Mod> 
