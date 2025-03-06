@@ -2,19 +2,16 @@
 
 A mod for Civilization VII that enhances the display of town focus yield bonuses, showing detailed breakdowns of improvements, buildings, and trade routes that contribute to specialization bonuses.
 
-## Version 1.1.8
+## Version 1.1.9
 
 ### What's New
-- Added Simplified Chinese language support (Thanks to thendye for the translations!)
-- Added Polish language support (Thanks to Klajwert for the translations!)
-- Enhanced Urban Center calculation logic with proper quarter detection
-- Added support for unique civilization-specific quarters
-- Improved support for current-age and full-tile building quarters
-- Enhanced tooltip display with better localization support
+- Added Korean language support (Thanks to Hotsolidinfill for the translations!)
+- Updated documentation
+- Minor code improvements
 
 ### Features
 - Detailed breakdown of specialization bonuses
-- Support for multiple languages (English, Japanese, Italian, Russian, Polish, Simplified Chinese)
+- Support for multiple languages (English, Japanese, Italian, Russian, Polish, Simplified Chinese, Korean)
 - Visual improvements and detailed tooltips
 - Era bonus multiplier display
 - Resource and happiness calculations
@@ -26,7 +23,8 @@ A mod for Civilization VII that enhances the display of town focus yield bonuses
 - Italian
 - Russian
 - Polish
-- Simplified Chinese (New!)
+- Simplified Chinese
+- Korean (New!)
 
 ### Credits
 - Original work by Yamada
@@ -34,6 +32,7 @@ A mod for Civilization VII that enhances the display of town focus yield bonuses
 - Russian translations by Webrok
 - Polish translations by Klajwert
 - Simplified Chinese translations by thendye
+- Korean translations by Hotsolidinfill
 - Special thanks to fulfom for reporting and helping fix the Urban Center quarters bug
 
 ## Overview
@@ -141,6 +140,7 @@ Current language support:
 - Russian (ru_RU)
 - Polish (pl_PL)
 - Simplified Chinese (zh_Hans_CN)
+- Korean (ko_KR)
 
 ## Credits
 - Original mod concept by Yamada
@@ -149,12 +149,17 @@ Current language support:
 - Russian translation by Webrok
 - Polish translation by Klajwert
 - Simplified Chinese translation by thendye
+- Korean translation by Hotsolidinfill
 - Thanks to the Civilization VII modding community
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details
 
 ## Version History
+- 1.1.9: Korean Localization Update
+  - Added Korean language support (thanks to Hotsolidinfill!)
+  - Updated documentation
+  - Minor code improvements
 - 1.1.8: Chinese Localization Update
   - Added Simplified Chinese language support (thanks to thendye!)
   - Updated documentation
