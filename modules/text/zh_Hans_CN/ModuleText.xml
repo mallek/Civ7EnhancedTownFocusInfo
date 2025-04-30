@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Database>
-	<ChineseSimplifiedText>
-		<Row Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO">
+	<LocalizedText>
+		<Replace Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO" Language="zh_Hans_CN">
 			<Text>增强城镇专业化信息</Text>
-		</Row>
-		<Row Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION">
+		</Replace>
+		<Replace Tag="LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION" Language="zh_Hans_CN">
 			<Text>在《文明7》中增强显示的城镇专业化产出加成，展示改进、建筑和贸易路线对专业化加成的详细分解。</Text>
-		</Row>
-	</ChineseSimplifiedText>
+		</Replace>
+	</LocalizedText>
 </Database> 

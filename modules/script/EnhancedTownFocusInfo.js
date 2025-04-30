@@ -1,7 +1,7 @@
 /**
  * Enhanced Town Focus Info Mod - Makes Town Focus Tooltips more informative
  * Author: Mallek
- * Version: 1.1.9
+ * Version: 1.1.10
  */
 
 // Set to false for production, true for debugging
@@ -9,7 +9,7 @@ const DEV_MODE = false;
 
 (function() {
     // Development constants
-    const VERSION = "1.1.9";
+    const VERSION = "1.1.10";
 
     // Add safe logging function
     function log(...args) {
@@ -544,7 +544,10 @@ const DEV_MODE = false;
     }
 
     function modifyTooltip(tooltip) {
+        log('Modifying tooltip:', tooltip);
+        
         if (state.lastTooltip) {
+            log('Clearing previous tooltip');
             clearTooltipContent(state.lastTooltip);
         }
         state.lastTooltip = tooltip;
@@ -555,6 +558,7 @@ const DEV_MODE = false;
             clearTooltipContent(tooltip);
             return;
         }
+        log('Found city ID:', cityID);
 
         const l10nId = tooltip.querySelector("[data-l10n-id]")?.getAttribute("data-l10n-id");
         log('Tooltip ID:', l10nId);
@@ -573,6 +577,7 @@ const DEV_MODE = false;
             log('No tooltip content found');
             return;
         }
+        log('Found tooltip content');
 
         clearTooltipContent(tooltip);
 
@@ -812,22 +817,49 @@ const DEV_MODE = false;
                 `;
             } else if (totalCount.details.resources !== undefined) {
                 const resources = totalCount.details.resources
-                    .map(({name, count, iconId}) => `
-                        <div style="display: flex; justify-content: space-between; margin: 2px 0;">
-                            <span style="display: flex; align-items: center; gap: 4px;">
-                                <fxs-icon data-icon-id="${iconId}" class="size-8" style="min-width: 24px; min-height: 24px;"></fxs-icon>
-                            </span>
-                            <span style="color: #fff;">+${count}</span>
-                        </div>
-                    `)
+                    .map(({name, count, iconId}) => {
+                        const iconCSS = UI.getIconCSS(iconId);
+                        if (!iconCSS) {
+                            log(`Failed to load icon for resource: ${iconId}`);
+                            // Fallback to a generic icon or handle the error case
+                            iconElement.style.backgroundImage = UI.getIconCSS('RESOURCE_GENERIC');
+                        }
+                        const iconSize = window.devicePixelRatio > 1 || window.innerWidth > 2560 ? 64 : 40;
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+                                <div style="display: flex; align-items: center;">
+                                    <div style="
+                                        width: ${iconSize}px; 
+                                        height: ${iconSize}px; 
+                                        background-image: ${iconCSS}; 
+                                        background-size: contain; 
+                                        background-repeat: no-repeat; 
+                                        background-position: center;
+                                        flex-shrink: 0;
+                                    "></div>
+                                    <span style="
+                                        font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)}; 
+                                        color: #fff;
+                                        margin-left: 20px;
+                                        padding-right: 12px;
+                                    ">${name}</span>
+                                </div>
+                                <span style="
+                                    color: #fff; 
+                                    font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)}; 
+                                    margin-left: auto;
+                                ">+${count}</span>
+                            </div>
+                        `;
+                    })
                     .join('');
 
                 breakdownDiv.innerHTML = `
-                    <div style="margin-bottom: 8px;">
+                    <div style="margin-bottom: 16px; font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)}; color: #fff;">
                         ${Locale.compose("LOC_MOD_ETFI_TOTAL_RESOURCES")}: ${totalCount.details.resourceCount}
                     </div>
                     ${resources}
-                    <div style="display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <div style="display: flex; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.3); font-size: ${getScaledFontSize(FONT_SIZES.MEDIUM)};">
                         <span>${Locale.compose("LOC_MOD_ETFI_HAPPINESS_PER_RESOURCE")}</span>
                         <span style="color: #fff;">x2</span>
                     </div>
@@ -877,6 +909,7 @@ const DEV_MODE = false;
             for (const mutation of mutationsList) {
                 for (const node of mutation.removedNodes) {
                     if (node.nodeName === 'FXS-TOOLTIP') {
+                        log('Tooltip removed:', node);
                         clearTooltipContent(node);
                         if (state.lastTooltip === node) {
                             state.lastTooltip = null;
@@ -886,11 +919,15 @@ const DEV_MODE = false;
                 }
                 for (const node of mutation.addedNodes) {
                     if (node.nodeName === 'FXS-TOOLTIP') {
+                        log('New tooltip detected:', node);
                         // Wait for next frame to check visibility
                         requestAnimationFrame(() => {
                             if (node.offsetParent !== null) {  // Check if actually visible in DOM
+                                log('Tooltip is visible, setting up observers');
                                 observeTooltipContent(node);
                                 modifyTooltip(node);
+                            } else {
+                                log('Tooltip is not visible in DOM');
                             }
                         });
                     }
@@ -927,6 +964,57 @@ const DEV_MODE = false;
         return city;
     }
 
-    startTooltipObserver();
+    // After your state initialization
+    Loading.runWhenFinished(() => {
+        log('Loading finished, starting initialization...');
+        
+        // Preload yield icons
+        log('Preloading yield icons...');
+        Object.values(TOOLTIPS.configs).forEach(config => {
+            config.icons.forEach(iconId => {
+                const iconUrl = UI.getIcon(iconId, "YIELD");
+                if (iconUrl) {
+                    log('Preloading yield icon:', iconId);
+                    Controls.preloadImage(iconUrl, 'town-focus-tooltip');
+                }
+            });
+        });
+
+        // Preload resource icons - do this before caching any tooltips
+        log('Preloading resource icons...');
+        GameInfo.Resources.forEach(resource => {
+            const iconUrl = UI.getIcon(resource.ResourceType);
+            if (iconUrl) {
+                log('Preloading resource icon:', resource.ResourceType);
+                Controls.preloadImage(iconUrl, 'town-focus-tooltip');
+            }
+        });
+
+        // Start your tooltip observer after resources are loaded
+        log('Starting tooltip observer...');
+        startTooltipObserver();
+        
+        // Add a check to ensure the observer is running
+        setTimeout(() => {
+            if (!state.tooltipObserver) {
+                log('WARNING: Tooltip observer not started, retrying...');
+                startTooltipObserver();
+            } else {
+                log('Tooltip observer confirmed running');
+            }
+        }, 1000);
+    });
+
+    // Add a fallback initialization
+    window.addEventListener('load', () => {
+        log('Window loaded, checking if initialization is needed...');
+        if (!state.tooltipObserver) {
+            log('Tooltip observer not found, starting initialization...');
+            Loading.runWhenFinished(() => {
+                startTooltipObserver();
+            });
+        }
+    });
+
     log('ETFI Initialization complete');
 })();

@@ -2,12 +2,13 @@
 
 A mod for Civilization VII that enhances the display of town focus yield bonuses, showing detailed breakdowns of improvements, buildings, and trade routes that contribute to specialization bonuses.
 
-## Version 1.1.9
+## Version 1.1.10
 
 ### What's New
-- Added Korean language support (Thanks to Hotsolidinfill for the translations!)
+- Improved resource icon sizing and spacing in tooltips
+- Better scaling for 4K/high-resolution displays
 - Updated documentation
-- Minor code improvements
+- Minor visual improvements
 
 ### Features
 - Detailed breakdown of specialization bonuses
@@ -156,6 +157,12 @@ Current language support:
 This project is licensed under the MIT License - see the LICENSE file for details
 
 ## Version History
+- 1.1.10: Visual Enhancement Update
+  - Improved resource icon sizing and spacing in tooltips
+  - Better scaling for 4K/high-resolution displays
+  - Updated documentation
+  - Minor visual improvements
+  - Fixed Simplified Chinese Rendering in .modinfo (thanks v480615)
 - 1.1.9: Korean Localization Update
   - Added Korean language support (thanks to Hotsolidinfill!)
   - Updated documentation
