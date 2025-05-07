@@ -1,21 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Mod id="MLK_EnhancedTownFocusInfo" version="1.1.11"
+<Mod id="MLK_EnhancedTownFocusInfo" version="1.1.10"
 	xmlns="ModInfo">
 	<Properties>
 		<Name>LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO</Name>
 		<Description>LOC_MOD_MLK_ENHANCEDTOWNFOCUSINFO_DESCRIPTION</Description>
-		<Authors>Mallek123 (Based on original work by Yamada)</Authors>
+		<Authors>Mallek (Based on original work by Yamada)</Authors>
 		<Package>Mod</Package>
 		<AffectsSavedGames>0</AffectsSavedGames>
 	</Properties>
-	<TravisHaley>
-		<BestDev>
-			<Name>Travis Haley</Name>
-			<Email>travishaley@gmail.com</Email>
-			<Discord>TravisHaley</Discord>
-			<GitHub>TravisHaley</GitHub>
-		</BestDev>
-	</TravisHaley>
 	<Dependencies>
 		<Mod id="base-standard" title="LOC_MODULE_BASE_STANDARD_NAME" />
 	</Dependencies>
